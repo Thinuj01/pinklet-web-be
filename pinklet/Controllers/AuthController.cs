@@ -28,18 +28,22 @@ namespace pinklet.Controllers
         }
 
         // POST: api/Auth/register
+        // API for register a guest user
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] UserDto request)
+        public async Task<IActionResult> Register([FromBody] User request)
         {
-            if (await _context.Users.AnyAsync(u => u.Username == request.Username))
+            if (await _context.Users.AnyAsync(u => u.FirstName == request.FirstName))
                 return BadRequest("Username already exists.");
 
             var user = new User
             {
-                Username = request.Username,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
                 Email = request.Email,
-                PasswordHash = HashPassword(request.Password),
-                Role = "User"
+                Password = HashPassword(request.Password),
+                PhoneNumber = request.PhoneNumber,
+                Role = "User",
+                Availability = request.Availability
             };
 
             _context.Users.Add(user);
@@ -49,11 +53,12 @@ namespace pinklet.Controllers
         }
 
         // POST: api/Auth/login
+        // API for authenticate user & generate JWT tokens
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserDto request)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
-            if (user == null || user.PasswordHash != HashPassword(request.Password))
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            if (user == null || user.Password != HashPassword(request.Password))
                 return Unauthorized("Invalid username or password");
 
             var token = GenerateJwtToken(user);
@@ -83,7 +88,7 @@ namespace pinklet.Controllers
             return Ok(new
             {
                 user.Id,
-                user.Username,
+                user.FirstName,
                 user.Email
             });
         }
@@ -106,7 +111,7 @@ namespace pinklet.Controllers
                 Subject = new ClaimsIdentity(new[]
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim(ClaimTypes.Name, user.Username),
+                    new Claim(ClaimTypes.Name, user.FirstName),
                     new Claim(ClaimTypes.Role, user.Role ?? "User")
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
@@ -120,11 +125,10 @@ namespace pinklet.Controllers
         }
     }
 
-    // Simple DTO
+    // DTO for get loging credientails as object
     public class UserDto
     {
-        public string Username { get; set; }
         public string Password { get; set; }
-        public string Email { get; set; } // optional in login
+        public string Email { get; set; }
     }
 }
