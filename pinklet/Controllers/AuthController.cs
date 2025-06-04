@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -60,13 +61,71 @@ namespace pinklet.Controllers
             return Ok("User registered successfully. Please check your email to verify.");
         }
 
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLoginAsync([FromBody] GoogleLoginRequest request)
+        {
+            // TODO: Check if user exists in DB and create user if not (you can use EF Core here)
+
+            // For demonstration, we directly return JWT
+
+            if (await _context.Users.AnyAsync(u => u.Email == request.Email))
+            {
+
+            }
+            else {
+                var user = new User
+                {
+                    FirstName = request.Name,
+                    LastName = "",
+                    Email = request.Email,
+                    Password = "",
+                    PhoneNumber = "",
+                    Role = "User",
+                    Availability = "verified",
+                    EmailVerificationToken = "",
+                    TokenGeneratedAt = DateTime.UtcNow
+                };
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+            }
+
+
+                var claims = new[]
+                {
+                new Claim(JwtRegisteredClaimNames.Sub, request.Sub),
+                new Claim(JwtRegisteredClaimNames.Email, request.Email),
+                new Claim("name", request.Name)
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: configuration["Jwt:Issuer"],
+                audience: configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddDays(7),
+                signingCredentials: creds
+            );
+
+            return Ok(new
+            {
+                token = new JwtSecurityTokenHandler().WriteToken(token),
+                email = request.Email,
+                name = request.Name
+            });
+        }
+
 
         // POST: api/Auth/fpwd
         // API for sending OTP to user's email for account recovery
         [HttpPost("fpwd")]
-        public async Task<IActionResult> SendingOtpAccountRecovery([FromBody] string Email)
+        public async Task<IActionResult> SendingOtpAccountRecovery([FromBody] EmailRequest request)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == Email);
+            System.Diagnostics.Debug.WriteLine("Debug message");
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
             if (user == null)
             {
                 return BadRequest("Invaild Email");
@@ -121,8 +180,12 @@ namespace pinklet.Controllers
             if (user == null || user.Password != HashPassword(request.Password))
                 return Unauthorized("Invalid username or password");
 
-            var token = GenerateJwtToken(user);
-            return Ok(new { token });
+            return Ok(new
+            {
+                token = GenerateJwtToken(user),
+                email = user.Email,
+                name = user.FirstName
+            });
         }
 
         // GET: api/Auth/user/{id}
@@ -177,7 +240,7 @@ namespace pinklet.Controllers
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
 
-            return Redirect("https://your-frontend.com/email-confirmed");
+            return Ok("Email verified susccessfully");
         }
 
 
@@ -216,7 +279,7 @@ namespace pinklet.Controllers
         // Send confirmation email to user after registration
         private async Task SendConfirmationEmail(User user)
         {
-            var confirmationLink = $"https://your-frontend.com/confirm-email?token={Uri.EscapeDataString(user.EmailVerificationToken)}";
+            var confirmationLink = $"http://localhost:5173/confirm-email?token={Uri.EscapeDataString(user.EmailVerificationToken)}";
 
             var mailMessage = new MailMessage
             {
@@ -288,6 +351,19 @@ namespace pinklet.Controllers
     public class AccountRecoveryRequest
     {
         public string Otp { get; set; }
+        public string Email { get; set; }
+    }
+
+    public class GoogleLoginRequest
+    {
+        public string Email { get; set; }
+        public string Name { get; set; }
+        public string Sub { get; set; } 
+        public string Picture { get; set; }
+    }
+
+    public class EmailRequest
+    {
         public string Email { get; set; }
     }
 }
