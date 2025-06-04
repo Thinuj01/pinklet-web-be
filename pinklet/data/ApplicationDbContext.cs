@@ -10,7 +10,7 @@ namespace pinklet.data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options) { }
 
-        public DbSet<User> Users { get; set; } // Example table
+        public DbSet<User> Users { get; set; }
     }
 
 }
