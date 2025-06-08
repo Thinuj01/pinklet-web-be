@@ -21,9 +21,11 @@ namespace pinklet.Models
         [Required]
         public string Email { get; set; }
 
-        [Required]
         public string PhoneNumber { get; set; }
 
         public string Availability {  get; set; }
+
+        public string? EmailVerificationToken { get; set; }
+        public DateTime? TokenGeneratedAt { get; set; }
     }
 }
