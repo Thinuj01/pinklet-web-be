@@ -150,7 +150,7 @@ namespace pinklet.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
             if (user == null || user.EmailVerificationToken != request.Otp)
             {
-                return BadRequest("Invalid OTP or email.");
+                return BadRequest("Invalid OTP.");
             }
             return Ok("OTP verified successfully. You can now reset your password.");
         }
