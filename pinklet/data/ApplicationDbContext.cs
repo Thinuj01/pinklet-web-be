@@ -11,6 +11,8 @@ namespace pinklet.data
             : base(options) { }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<_3DCakeModel> Cakes3dModel { get; set; }
+        public DbSet<CakeLayerModel> CakeLayers { get; set; }
     }
 
 }
