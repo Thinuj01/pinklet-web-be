@@ -222,7 +222,7 @@ namespace pinklet.Controllers
         public async Task<IActionResult> VerifyEmail([FromQuery] string token)
         {
             if (string.IsNullOrEmpty(token))
-                return BadRequest("Token is missing.");
+                return BadRequest("Token is Missing.");
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.EmailVerificationToken == token);
 
