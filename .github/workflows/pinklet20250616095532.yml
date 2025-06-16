@@ -53,6 +53,11 @@ jobs:
        sleep 15
        mkdir -p ./pinklet/publish
        curl http://localhost:5000/swagger/v1/swagger.json --output ${{ env.API_IMPORT_SPECIFICATION_PATH }}
+    - name: Upload Swagger JSON as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: swagger
+        path: ${{ env.API_IMPORT_SPECIFICATION_PATH }}
     - name: Kill background .NET app
       run: |
        kill $(cat dotnetapp.pid) || true
@@ -79,6 +84,11 @@ jobs:
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+    - name: Download Swagger JSON
+      uses: actions/download-artifact@v4
+      with:
+        name: swagger
+        path: ./pinklet/publish
     - name: Import API into Azure API Management
       run: az apim api import --path "${{ env.AZURE_APIM_RESOURCE_PATH }}" --resource-group "${{ env.AZURE_APIM_RESOURCEGROUP }}" --service-name "${{ env.AZURE_APIM_SERVICENAME }}" --api-id "${{ env.AZURE_APIM_API_ID }}" --service-url "${{ env.AZURE_APIM_APPSERVICEURL }}" --specification-path "${{ env.API_IMPORT_SPECIFICATION_PATH }}" --specification-format OpenApi --subscription-required false
     - name: logout
