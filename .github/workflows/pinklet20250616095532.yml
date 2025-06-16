@@ -18,7 +18,7 @@ env:
   API_IMPORT_VERSION: v1
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 9.0.x
-  WORKING_DIRECTORY: .
+  WORKING_DIRECTORY: ./pinklet
 jobs:
   build:
     runs-on: ubuntu-latest
