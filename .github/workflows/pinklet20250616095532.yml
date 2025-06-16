@@ -43,14 +43,18 @@ jobs:
     - name: Install Swashbuckle CLI .NET Global Tool
       run: dotnet tool install --global Swashbuckle.AspNetCore.Cli --version ${{ env.SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION }}
       working-directory: ${{ env.WORKING_DIRECTORY }}
-    - name: Run API to serve Swagger JSON
-      run: dotnet run --no-build --configuration ${{ env.CONFIGURATION }} &
-      working-directory: ${{ env.WORKING_DIRECTORY }}
-    - name: Wait for app to start and fetch Swagger JSON
+    - name: Run API in background
       run: |
-       sleep 10
+       dotnet run --no-build --configuration ${{ env.CONFIGURATION }} &
+       echo $! > dotnetapp.pid
+      working-directory: ${{ env.WORKING_DIRECTORY }}
+    - name: Wait and fetch Swagger JSON
+      run: |
+       sleep 15
        curl http://localhost:5000/swagger/v1/swagger.json --output ${{ env.API_IMPORT_SPECIFICATION_PATH }}
-
+    - name: Kill background .NET app
+      run: |
+       kill $(cat dotnetapp.pid) || true
     - name: Publish Artifacts
       uses: actions/upload-artifact@v4
       with:
