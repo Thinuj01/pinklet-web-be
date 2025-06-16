@@ -51,6 +51,7 @@ jobs:
     - name: Wait and fetch Swagger JSON
       run: |
        sleep 15
+       mkdir -p ./pinklet/publish
        curl http://localhost:5000/swagger/v1/swagger.json --output ${{ env.API_IMPORT_SPECIFICATION_PATH }}
     - name: Kill background .NET app
       run: |
