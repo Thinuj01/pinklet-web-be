@@ -60,7 +60,11 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 app.UseCors();
-app.UseHttpsRedirection();
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
