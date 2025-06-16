@@ -53,6 +53,8 @@ jobs:
        sleep 15
        mkdir -p ./pinklet/publish
        curl http://localhost:5000/swagger/v1/swagger.json --output ${{ env.API_IMPORT_SPECIFICATION_PATH }}
+    - name: Print Swagger JSON
+      run: cat ${{ env.API_IMPORT_SPECIFICATION_PATH }}
     - name: Upload Swagger JSON as artifact
       uses: actions/upload-artifact@v4
       with:

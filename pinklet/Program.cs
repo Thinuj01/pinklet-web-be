@@ -50,7 +50,8 @@ builder.Services.AddAuthentication(options =>
     };
 });
 builder.WebHost.UseUrls("http://localhost:5000");
-
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -60,6 +61,8 @@ if (app.Environment.IsDevelopment())
 }
 app.UseCors();
 app.UseHttpsRedirection();
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseAuthentication();
 
