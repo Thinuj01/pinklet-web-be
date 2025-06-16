@@ -77,6 +77,21 @@ jobs:
       with:
         name: webapp
         path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+    - name: Inject Azure SQL Connection String
+      run: |
+        cat <<EOF > ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/appsettings.Production.json
+        {
+          "ConnectionStrings": {
+            "DefaultConnection": "${{ secrets.AZURE_SQL_CONNECTION_STRING }}"
+          },
+          "Logging": {
+            "LogLevel": {
+              "Default": "Information",
+              "Microsoft.AspNetCore": "Warning"
+            }
+          }
+        }
+        EOF
     - name: Azure Login
       uses: azure/login@v2
       with:
