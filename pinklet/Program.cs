@@ -12,7 +12,7 @@ var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
 // Add services to the container.
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
         policy.WithOrigins("http://localhost:5173")
               .AllowAnyHeader()
@@ -64,7 +64,7 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-app.UseCors();
+app.UseCors("AllowFrontend");
 
 if (app.Environment.IsDevelopment())
 {
