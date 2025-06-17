@@ -49,7 +49,7 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(key)
     };
 });
-builder.WebHost.UseUrls("http://0.0.0.0:5000");
+//builder.WebHost.UseUrls("http://0.0.0.0:5000");
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 var app = builder.Build();
@@ -59,14 +59,22 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-app.UseCors();
+app.UseCors(x =>
+    x.AllowAnyOrigin()
+     .AllowAnyMethod()
+     .AllowAnyHeader()
+);
+
 if (app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
 
 app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwaggerUI(c => {
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Pinklet API V1");
+    c.RoutePrefix = "swagger"; // or "" if you want it at root
+});
 
 app.UseAuthentication();
 
