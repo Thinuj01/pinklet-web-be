@@ -14,9 +14,10 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("http://localhost:5173")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials(); 
     });
 });
 builder.Services.AddControllers();
@@ -63,11 +64,7 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-app.UseCors(x =>
-    x.AllowAnyOrigin()
-     .AllowAnyMethod()
-     .AllowAnyHeader()
-);
+app.UseCors();
 
 if (app.Environment.IsDevelopment())
 {
