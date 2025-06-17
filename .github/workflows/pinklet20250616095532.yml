@@ -45,6 +45,7 @@ jobs:
       working-directory: ${{ env.WORKING_DIRECTORY }}
     - name: Run API in background
       run: |
+       export GENERATE_SWAGGER=true
        dotnet run --no-build --configuration ${{ env.CONFIGURATION }} &
        echo $! > dotnetapp.pid
       working-directory: ${{ env.WORKING_DIRECTORY }}

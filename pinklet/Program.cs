@@ -49,6 +49,10 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(key)
     };
 });
+if (builder.Environment.IsDevelopment() || Environment.GetEnvironmentVariable("GENERATE_SWAGGER") == "true")
+{
+    builder.WebHost.UseUrls("http://localhost:5000");
+}
 //builder.WebHost.UseUrls("http://0.0.0.0:5000");
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
