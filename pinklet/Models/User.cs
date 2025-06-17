@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace pinklet.Models
 {
@@ -26,6 +27,7 @@ namespace pinklet.Models
         public string Availability {  get; set; }
 
         public string? EmailVerificationToken { get; set; }
-        public DateTime? TokenGeneratedAt { get; set; }
+        [Column(TypeName = "datetimeoffset")]
+        public DateTimeOffset? TokenGeneratedAt { get; set; }
     }
 }
