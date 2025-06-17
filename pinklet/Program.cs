@@ -64,13 +64,14 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseHttpsRedirection();
+//}
+app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseHttpsRedirection();
-}
-
 app.UseSwagger();
 app.UseSwaggerUI(c => {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Pinklet API V1");
