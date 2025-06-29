@@ -32,21 +32,7 @@ namespace pinklet.Controllers
                 return BadRequest("Cake data is required.");
             }
 
-            
-            if (Request.ContentType?.Contains("application/json") == true &&
-                HttpContext.Request.Body.CanSeek)
-            {
-                HttpContext.Request.Body.Position = 0;
-                using var reader = new StreamReader(HttpContext.Request.Body);
-                var bodyText = await reader.ReadToEndAsync();
-                var json = System.Text.Json.JsonDocument.Parse(bodyText);
-                if (json.RootElement.TryGetProperty("Toppers", out var toppersElement) &&
-                    toppersElement.ValueKind == System.Text.Json.JsonValueKind.Array)
-                {
-                    cake.Toppers = toppersElement.ToString();
-                }
-            }
-
+            // Remove this manual JSON parsing - let model binding handle it
             foreach (var layer in cake.CakeLayers)
             {
                 layer.Cake = null;
