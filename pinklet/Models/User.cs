@@ -29,5 +29,11 @@ namespace pinklet.Models
         public string? EmailVerificationToken { get; set; }
         [Column(TypeName = "datetimeoffset")]
         public DateTimeOffset? TokenGeneratedAt { get; set; }
+
+        public ICollection<Item> Items { get; set; } = new List<Item>();
+
+        public ICollection<Package> Packages { get; set; } = new List<Package>();
+
+        public ICollection<Cart> Carts { get; set; } = new List<Cart>();
     }
 }
