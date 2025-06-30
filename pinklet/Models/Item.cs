@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 namespace pinklet.Models
 {
     public class Item
@@ -9,7 +10,7 @@ namespace pinklet.Models
         [ForeignKey("Vendor")]
         public int VenderId { get; set; }
         [NotMapped]
-        [System.Text.Json.Serialization.JsonIgnore]
+        [JsonIgnore]
         public User Vendor { get; set; }
         public string ItemCode { get; set; }
         public string ItemName { get; set; }
