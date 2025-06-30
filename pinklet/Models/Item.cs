@@ -7,8 +7,8 @@ namespace pinklet.Models
     {
         [Key]
         public int Id { get; set; }
-        [ForeignKey("Vendor")]
-        public int VenderId { get; set; }
+        public int VendorId { get; set; }
+        [ForeignKey("VendorId")]
         [NotMapped]
         [JsonIgnore]
         public User Vendor { get; set; }
