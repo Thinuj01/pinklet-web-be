@@ -8,6 +8,8 @@ namespace pinklet.Models
         public int Id { get; set; }
         [ForeignKey("Vendor")]
         public int VenderId { get; set; }
+        [NotMapped]
+        [System.Text.Json.Serialization.JsonIgnore]
         public User Vendor { get; set; }
         public string ItemCode { get; set; }
         public string ItemName { get; set; }
