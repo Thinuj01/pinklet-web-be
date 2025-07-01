@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace pinklet.Migrations
 {
     /// <inheritdoc />
-    public partial class FixedCakeShadowFK : Migration
+    public partial class InitialUpdate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -112,14 +112,14 @@ namespace pinklet.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    VenderId = table.Column<int>(type: "int", nullable: false),
+                    VendorId = table.Column<int>(type: "int", nullable: false),
                     ItemCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ItemName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ItemCategory = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ItemTags = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ItemPrice = table.Column<double>(type: "float", nullable: false),
                     ItemRating = table.Column<int>(type: "int", nullable: false),
-                    ItemDescription = table.Column<int>(type: "int", nullable: false),
+                    ItemDescription = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ItemImageLink1 = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ItemImageLink2 = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ItemImageLink3 = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -129,8 +129,8 @@ namespace pinklet.Migrations
                 {
                     table.PrimaryKey("PK_Items", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Items_Users_VenderId",
-                        column: x => x.VenderId,
+                        name: "FK_Items_Users_VendorId",
+                        column: x => x.VendorId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -249,9 +249,9 @@ namespace pinklet.Migrations
                 column: "PackageId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Items_VenderId",
+                name: "IX_Items_VendorId",
                 table: "Items",
-                column: "VenderId");
+                column: "VendorId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Packages__3DCakeModelId",

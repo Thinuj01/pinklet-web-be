@@ -12,8 +12,8 @@ using pinklet.data;
 namespace pinklet.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250701033045_ItemModelFixed")]
-    partial class ItemModelFixed
+    [Migration("20250701054853_InitialUpdate")]
+    partial class InitialUpdate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
