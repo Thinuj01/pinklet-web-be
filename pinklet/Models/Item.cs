@@ -9,7 +9,6 @@ namespace pinklet.Models
         public int Id { get; set; }
         public int VendorId { get; set; }
         [ForeignKey("VendorId")]
-        [NotMapped]
         [JsonIgnore]
         public User Vendor { get; set; }
         public string ItemCode { get; set; }
@@ -18,7 +17,7 @@ namespace pinklet.Models
         public string ItemTags { get; set; }
         public double ItemPrice { get; set; }
         public int ItemRating { get; set; }
-        public int ItemDescription { get; set; }
+        public string ItemDescription { get; set; }
         public string? ItemImageLink1 { get; set; }
         public string? ItemImageLink2 { get; set; }
         public string? ItemImageLink3 { get; set; }
