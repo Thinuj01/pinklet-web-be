@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 namespace pinklet.Models
 {
     public class Item
@@ -10,6 +11,7 @@ namespace pinklet.Models
         public int VendorId { get; set; }
         [ForeignKey("VendorId")]
         [JsonIgnore]
+        [BindNever]
         public User Vendor { get; set; }
         public string ItemCode { get; set; }
         public string ItemName { get; set; }
