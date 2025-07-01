@@ -22,9 +22,8 @@ builder.Services.AddCors(options =>
               .AllowCredentials(); 
     });
 });
-builder.Services.AddControllers(options=>
- options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddControllers();
+
 builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
