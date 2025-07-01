@@ -10,8 +10,6 @@ namespace pinklet.Models
         public int Id { get; set; }
         public int VendorId { get; set; }
         [ForeignKey("VendorId")]
-        [JsonIgnore]
-        [BindNever]
         public User Vendor { get; set; }
         public string ItemCode { get; set; }
         public string ItemName { get; set; }
