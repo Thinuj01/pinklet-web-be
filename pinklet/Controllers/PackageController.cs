@@ -22,31 +22,39 @@ namespace pinklet.Controllers
         [HttpPost]
         public async Task<IActionResult> AddPackage([FromBody] PackageDTO dto)
         {
-            if (!ModelState.IsValid || dto == null)
-                return BadRequest("Invalid package data.");
-
-            // Ensure only one cake type is selected
-            bool hasCake = dto.CakeId.HasValue;
-            bool has3DCake = dto.ThreeDCakeId.HasValue;
-
-            if (hasCake == has3DCake)
+            try
             {
-                return BadRequest("You must provide either CakeId or ThreeDCakeId, but not both.");
+                if (!ModelState.IsValid || dto == null)
+                    return BadRequest("Invalid package data.");
+
+                // Ensure only one cake type is selected
+                bool hasCake = dto.CakeId.HasValue;
+                bool has3DCake = dto.ThreeDCakeId.HasValue;
+
+                if (hasCake == has3DCake)
+                {
+                    return BadRequest("You must provide either CakeId or ThreeDCakeId, but not both.");
+                }
+
+                var package = new Package
+                {
+                    PackageCode = dto.PackageCode,
+                    UserId = dto.UserId,
+                    CakeId = dto.CakeId ?? 0,  // EF requires a value; 0 will be ignored in DB if unused
+                    ThreeDCakeId = dto.ThreeDCakeId ?? 0,
+                    ItemPackages = dto.ItemIds.Select(id => new ItemPackage { ItemId = id }).ToList()
+                };
+
+                _context.Packages.Add(package);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Package added", package.Id });
             }
-
-            var package = new Package
+            catch (Exception ex)
             {
-                PackageCode = dto.PackageCode,
-                UserId = dto.UserId,
-                CakeId = dto.CakeId ?? 0,  // EF requires a value; 0 will be ignored in DB if unused
-                ThreeDCakeId = dto.ThreeDCakeId ?? 0,
-                ItemPackages = dto.ItemIds.Select(id => new ItemPackage { ItemId = id }).ToList()
-            };
-
-            _context.Packages.Add(package);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = "Package added", package.Id });
+                Console.WriteLine($"❌ ERROR: {ex.Message}");
+                return StatusCode(500, "Internal server error occurred.");
+            }
         }
 
 
