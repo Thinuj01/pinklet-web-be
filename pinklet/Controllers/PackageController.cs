@@ -53,7 +53,7 @@ namespace pinklet.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ ERROR: {ex.Message}");
-                return StatusCode(500, "Internal server error occurred.");
+                return StatusCode(500, $"Internal server error occurred.{ex.Message}");
             }
         }
 
