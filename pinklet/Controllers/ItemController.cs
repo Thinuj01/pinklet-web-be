@@ -3,7 +3,6 @@ using pinklet.data;
 using Microsoft.EntityFrameworkCore;
 using pinklet.Models;
 
-
 namespace pinklet.Controllers
 {
     [ApiController]
@@ -27,24 +26,62 @@ namespace pinklet.Controllers
             {
                 return BadRequest(ModelState);
             }
+
             if (item == null)
             {
                 return BadRequest("Item data is required.");
             }
+
+            // Ensure Vendor is not accidentally populated
+            item.Vendor = null;
+
             _context.Items.Add(item);
             await _context.SaveChangesAsync();
+
             return Ok(new { message = "Item added successfully", item.Id });
         }
 
+        // GET: api/item
         [HttpGet]
         public async Task<IActionResult> GetAllItems()
         {
-            var items = await _context.Items.ToListAsync();
+            var items = await _context.Items
+                .Include(i => i.Vendor)
+                .Select(i => new ItemWithVendorDTO
+                {
+                    Id = i.Id,
+                    ItemCode = i.ItemCode,
+                    ItemName = i.ItemName,
+                    ItemCategory = i.ItemCategory,
+                    ItemTags = i.ItemTags,
+                    ItemPrice = i.ItemPrice,
+                    VendorId = i.VendorId,
+                    VendorName = i.Vendor.FirstName + " " + i.Vendor.LastName,
+                    VendorEmail = i.Vendor.Email
+                })
+                .ToListAsync();
+
             if (items == null || !items.Any())
             {
                 return NotFound("No items found.");
             }
+
             return Ok(items);
         }
+
+
+        public class ItemWithVendorDTO
+        {
+            public int Id { get; set; }
+            public string ItemCode { get; set; }
+            public string ItemName { get; set; }
+            public string ItemCategory { get; set; }
+            public string ItemTags { get; set; }
+            public double ItemPrice { get; set; }
+            public int VendorId { get; set; }
+            public string VendorName { get; set; }
+            public string VendorEmail { get; set; }
+        }
+
     }
 }
