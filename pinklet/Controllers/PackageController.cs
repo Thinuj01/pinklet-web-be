@@ -50,11 +50,13 @@ namespace pinklet.Controllers
 
                 return Ok(new { message = "Package added", package.Id });
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex)
             {
-                Console.WriteLine($"❌ ERROR: {ex.Message}");
-                return StatusCode(500, $"Internal server error occurred.{ex.Message}");
+                var inner = ex.InnerException?.Message ?? "No inner exception";
+                Console.WriteLine($"❌ DB Update Error: {inner}");
+                return StatusCode(500, $"Internal server error: {inner}");
             }
+
         }
 
 
