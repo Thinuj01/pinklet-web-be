@@ -40,8 +40,8 @@ namespace pinklet.Controllers
                 {
                     PackageCode = dto.PackageCode,
                     UserId = dto.UserId,
-                    CakeId = dto.CakeId ?? 0,  // EF requires a value; 0 will be ignored in DB if unused
-                    ThreeDCakeId = dto.ThreeDCakeId ?? 0,
+                    CakeId = dto.CakeId ?? null,
+                    ThreeDCakeId = dto.ThreeDCakeId ?? null,
                     ItemPackages = dto.ItemIds.Select(id => new ItemPackage { ItemId = id }).ToList()
                 };
 

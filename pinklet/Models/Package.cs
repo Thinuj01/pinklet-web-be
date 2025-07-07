@@ -15,11 +15,11 @@ namespace pinklet.Models
 
         public ICollection<ItemPackage> ItemPackages { get; set; } = new List<ItemPackage>();
 
-        public int CakeId { get; set; }
+        public int? CakeId { get; set; }
         [ForeignKey(nameof(CakeId))]
         public Cake Cake { get; set; }
 
-        public int ThreeDCakeId { get; set; }
+        public int? ThreeDCakeId { get; set; }
         [ForeignKey(nameof(ThreeDCakeId))]
         [InverseProperty(nameof(_3DCakeModel.Packages))]
         public _3DCakeModel ThreeDCake { get; set; }
