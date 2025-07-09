@@ -184,7 +184,8 @@ namespace pinklet.Controllers
             {
                 token = GenerateJwtToken(user),
                 email = user.Email,
-                name = user.FirstName
+                name = user.FirstName,
+                lname = user.LastName,
             });
         }
 
