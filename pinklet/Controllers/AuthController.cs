@@ -255,7 +255,7 @@ namespace pinklet.Controllers
         }
 
         // PUT: api/Auth/user/update-profile
-        [HttpPut("user/update-profile")]
+        [HttpPut("update-profile")]
         [Authorize]
         [EnableCors("AllowFrontend")]
         public async Task<IActionResult> UpdateProfileWithImage([FromForm] UserProfileUpdateRequest request)
