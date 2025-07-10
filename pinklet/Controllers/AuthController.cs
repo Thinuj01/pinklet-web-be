@@ -255,35 +255,42 @@ namespace pinklet.Controllers
         }
 
         // PUT: api/Auth/user/update-profile
-        [HttpPost("update-profile")]
+        [HttpPut("update-profile")]
         [Authorize]
         [EnableCors("AllowFrontend")]
         public async Task<IActionResult> UpdateProfileWithImage([FromForm] UserProfileUpdateRequest request)
         {
-            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim))
-                return Unauthorized("Invalid token.");
-
-            var user = await _context.Users.FindAsync(int.Parse(userIdClaim));
-            if (user == null)
-                return NotFound("User not found.");
-
-            // Upload profile image to Cloudinary
-            string imageUrl = user.ProfileImageLink;
-            if (request.ProfileImage != null)
+            try
             {
-                imageUrl = await _cloudinaryService.UploadImageAsync(request.ProfileImage);
-                if (string.IsNullOrEmpty(imageUrl))
-                    return StatusCode(500, "Image upload failed.");
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim))
+                    return Unauthorized("Invalid token.");
+
+                var user = await _context.Users.FindAsync(int.Parse(userIdClaim));
+                if (user == null)
+                    return NotFound("User not found.");
+
+                // Upload profile image to Cloudinary
+                string imageUrl = user.ProfileImageLink;
+                if (request.ProfileImage != null)
+                {
+                    imageUrl = await _cloudinaryService.UploadImageAsync(request.ProfileImage);
+                    if (string.IsNullOrEmpty(imageUrl))
+                        return StatusCode(500, "Image upload failed.");
+                }
+
+                user.PhoneNumber = request.PhoneNumber;
+                user.ProfileImageLink = imageUrl;
+
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync();
+
+                return Ok("Profile updated successfully.");
             }
-
-            user.PhoneNumber = request.PhoneNumber;
-            user.ProfileImageLink = imageUrl;
-
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
-
-            return Ok("Profile updated successfully.");
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while updating the profile: " + ex.Message);
+            }
         }
 
         private string HashPassword(string password)
