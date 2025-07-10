@@ -73,7 +73,7 @@ namespace pinklet.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Cakes");
+                    b.ToTable("Cakes", (string)null);
                 });
 
             modelBuilder.Entity("pinklet.Models.CakeLayerModel", b =>
@@ -134,7 +134,7 @@ namespace pinklet.Migrations
 
                     b.HasIndex("CakeId");
 
-                    b.ToTable("CakeLayers");
+                    b.ToTable("CakeLayers", (string)null);
                 });
 
             modelBuilder.Entity("pinklet.Models.Cart", b =>
@@ -161,7 +161,7 @@ namespace pinklet.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Carts");
+                    b.ToTable("Carts", (string)null);
                 });
 
             modelBuilder.Entity("pinklet.Models.Item", b =>
@@ -217,7 +217,7 @@ namespace pinklet.Migrations
 
                     b.HasIndex("VendorId");
 
-                    b.ToTable("Items");
+                    b.ToTable("Items", (string)null);
                 });
 
             modelBuilder.Entity("pinklet.Models.ItemPackage", b =>
@@ -232,7 +232,7 @@ namespace pinklet.Migrations
 
                     b.HasIndex("PackageId");
 
-                    b.ToTable("ItemPackages");
+                    b.ToTable("ItemPackages", (string)null);
                 });
 
             modelBuilder.Entity("pinklet.Models.Package", b =>
@@ -269,7 +269,7 @@ namespace pinklet.Migrations
 
                     b.HasIndex("_3DCakeModelId");
 
-                    b.ToTable("Packages");
+                    b.ToTable("Packages", (string)null);
                 });
 
             modelBuilder.Entity("pinklet.Models.User", b =>
@@ -319,7 +319,7 @@ namespace pinklet.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("pinklet.Models._3DCakeModel", b =>
@@ -361,7 +361,7 @@ namespace pinklet.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Cakes3dModel");
+                    b.ToTable("Cakes3dModel", (string)null);
                 });
 
             modelBuilder.Entity("pinklet.Models.CakeLayerModel", b =>

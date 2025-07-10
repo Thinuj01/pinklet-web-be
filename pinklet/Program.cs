@@ -81,17 +81,19 @@ if (app.Environment.IsDevelopment())
 //{
 //    app.UseHttpsRedirection();
 //}
-app.UseHttpsRedirection();
+
 app.UseCors("AllowFrontend");
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseSwagger();
 app.UseSwaggerUI(c => {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Pinklet API V1");
     c.RoutePrefix = "swagger"; // or "" if you want it at root
 });
 
-app.UseAuthentication();
-
-app.UseAuthorization();
+app.UseHttpsRedirection();
 
 app.MapControllers();
 
