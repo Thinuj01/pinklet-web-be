@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -255,6 +256,7 @@ namespace pinklet.Controllers
         // PUT: api/Auth/user/update-profile
         [HttpPut("user/update-profile")]
         [Authorize]
+        [EnableCors("AllowFrontend")]
         public async Task<IActionResult> UpdateProfileWithImage([FromForm] IFormFile profileImage, [FromForm] string phoneNumber)
         {
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
