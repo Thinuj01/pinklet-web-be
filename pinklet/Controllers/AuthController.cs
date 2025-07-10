@@ -254,8 +254,8 @@ namespace pinklet.Controllers
             return Ok("Email verified susccessfully");
         }
 
-        // PUT: api/Auth/user/update-profile
-        [HttpPut("user/update-profile")]
+        // PUT: api/Auth/user/update
+        [HttpPut("user/update")]
         [Authorize]
         [EnableCors("AllowFrontend")]
         public async Task<IActionResult> UpdateProfileWithImage([FromForm] UserProfileUpdateRequest request)
