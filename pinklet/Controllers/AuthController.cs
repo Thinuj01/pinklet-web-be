@@ -270,17 +270,20 @@ namespace pinklet.Controllers
                 if (user == null)
                     return NotFound("User not found.");
 
-                // Upload profile image to Cloudinary
-                string imageUrl = user.ProfileImageLink;
+                // Upload profile image only if it's provided
                 if (request.ProfileImage != null)
                 {
-                    imageUrl = await _cloudinaryService.UploadImageAsync(request.ProfileImage);
+                    var imageUrl = await _cloudinaryService.UploadImageAsync(request.ProfileImage);
                     if (string.IsNullOrEmpty(imageUrl))
                         return StatusCode(500, "Image upload failed.");
+                    user.ProfileImageLink = imageUrl;
                 }
 
-                user.PhoneNumber = request.PhoneNumber;
-                user.ProfileImageLink = imageUrl;
+                // Update phone number only if provided
+                if (!string.IsNullOrWhiteSpace(request.PhoneNumber))
+                {
+                    user.PhoneNumber = request.PhoneNumber;
+                }
 
                 _context.Users.Update(user);
                 await _context.SaveChangesAsync();
@@ -292,6 +295,7 @@ namespace pinklet.Controllers
                 return StatusCode(500, "An error occurred while updating the profile: " + ex.Message);
             }
         }
+
 
         private string HashPassword(string password)
         {
@@ -422,8 +426,8 @@ namespace pinklet.Controllers
     }
     public class UserProfileUpdateRequest
     {
-        public string PhoneNumber { get; set; }
-        public IFormFile ProfileImage { get; set; }
+        public string? PhoneNumber { get; set; }
+        public IFormFile? ProfileImage { get; set; }
 
     }
 }
