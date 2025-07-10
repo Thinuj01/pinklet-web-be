@@ -30,6 +30,7 @@ namespace pinklet.Models
         [Column(TypeName = "datetimeoffset")]
         public DateTimeOffset? TokenGeneratedAt { get; set; }
 
+        public string? ProfileImageLink { get; set; }
         public ICollection<Item> Items { get; set; } = new List<Item>();
 
         public ICollection<Package> Packages { get; set; } = new List<Package>();

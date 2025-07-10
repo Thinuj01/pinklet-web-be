@@ -67,6 +67,7 @@ if (builder.Environment.IsDevelopment() || Environment.GetEnvironmentVariable("G
 //builder.WebHost.UseUrls("http://0.0.0.0:5000");
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSingleton<CloudinaryService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

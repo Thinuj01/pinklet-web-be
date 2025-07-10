@@ -25,12 +25,14 @@ namespace pinklet.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration configuration;
         private readonly EmailSettings _emailSettings;
+        private readonly CloudinaryService _cloudinaryService;
 
-        public AuthController(ApplicationDbContext context, IConfiguration configuration, IOptions<EmailSettings> emailSettings)
+        public AuthController(ApplicationDbContext context, IConfiguration configuration, IOptions<EmailSettings> emailSettings, CloudinaryService cloudinaryService)
         {
             _context = context;
             this.configuration = configuration;
-            _emailSettings = emailSettings.Value; 
+            _emailSettings = emailSettings.Value;
+            _cloudinaryService = cloudinaryService;
         }
 
         // POST: api/Auth/register
@@ -51,7 +53,8 @@ namespace pinklet.Controllers
                 Role = "User",
                 Availability = "not-verified",
                 EmailVerificationToken = Guid.NewGuid().ToString(),
-                TokenGeneratedAt = DateTime.UtcNow
+                TokenGeneratedAt = DateTime.UtcNow,
+                ProfileImageLink=null
             };
 
             _context.Users.Add(user);
@@ -186,6 +189,8 @@ namespace pinklet.Controllers
                 email = user.Email,
                 name = user.FirstName,
                 lname = user.LastName,
+                id=user.Id,
+                proPic=user.ProfileImageLink,
             });
         }
 
@@ -213,7 +218,10 @@ namespace pinklet.Controllers
             {
                 user.Id,
                 user.FirstName,
-                user.Email
+                user.LastName,
+                user.Email,
+                user.PhoneNumber,
+                user.ProfileImageLink
             });
         }
 
@@ -244,6 +252,36 @@ namespace pinklet.Controllers
             return Ok("Email verified susccessfully");
         }
 
+        // PUT: api/Auth/user/update-profile
+        [HttpPut("user/update-profile")]
+        [Authorize]
+        public async Task<IActionResult> UpdateProfileWithImage([FromForm] IFormFile profileImage, [FromForm] string phoneNumber)
+        {
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim))
+                return Unauthorized("Invalid token.");
+
+            var user = await _context.Users.FindAsync(int.Parse(userIdClaim));
+            if (user == null)
+                return NotFound("User not found.");
+
+            // Upload profile image to Cloudinary
+            string imageUrl = user.ProfileImageLink;
+            if (profileImage != null)
+            {
+                imageUrl = await _cloudinaryService.UploadImageAsync(profileImage);
+                if (string.IsNullOrEmpty(imageUrl))
+                    return StatusCode(500, "Image upload failed.");
+            }
+
+            user.PhoneNumber = phoneNumber;
+            user.ProfileImageLink = imageUrl;
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            return Ok("Profile updated successfully.");
+        }
 
         private string HashPassword(string password)
         {
@@ -367,4 +405,10 @@ namespace pinklet.Controllers
     {
         public string Email { get; set; }
     }
+    public class UpdateUserRequest
+    {
+        public string PhoneNumber { get; set; }
+        public string ProfileImageLink { get; set; }
+    }
+
 }
