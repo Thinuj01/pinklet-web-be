@@ -55,7 +55,7 @@ namespace pinklet.Controllers
                 Availability = "not-verified",
                 EmailVerificationToken = Guid.NewGuid().ToString(),
                 TokenGeneratedAt = DateTime.UtcNow,
-                ProfileImageLink=null
+                ProfileImageLink = null
             };
 
             _context.Users.Add(user);
@@ -76,7 +76,8 @@ namespace pinklet.Controllers
             {
 
             }
-            else {
+            else
+            {
                 var user = new User
                 {
                     FirstName = request.Name,
@@ -95,8 +96,8 @@ namespace pinklet.Controllers
             }
 
 
-                var claims = new[]
-                {
+            var claims = new[]
+            {
                 new Claim(JwtRegisteredClaimNames.Sub, request.Sub),
                 new Claim(JwtRegisteredClaimNames.Email, request.Email),
                 new Claim("name", request.Name)
@@ -140,7 +141,7 @@ namespace pinklet.Controllers
             user.TokenGeneratedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
-            
+
             await SendOTPEmail(user);
 
             return Ok("OTP sent to your email. Please check your inbox.");
@@ -168,8 +169,8 @@ namespace pinklet.Controllers
             if (user == null)
                 return BadRequest("Invalid email.");
             user.Password = HashPassword(request.Password);
-            user.EmailVerificationToken = null; 
-            user.TokenGeneratedAt = null; 
+            user.EmailVerificationToken = null;
+            user.TokenGeneratedAt = null;
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
             return Ok("Password reset successfully.");
@@ -190,8 +191,8 @@ namespace pinklet.Controllers
                 email = user.Email,
                 name = user.FirstName,
                 lname = user.LastName,
-                id=user.Id,
-                proPic=user.ProfileImageLink,
+                id = user.Id,
+                proPic = user.ProfileImageLink,
             });
         }
 
@@ -257,7 +258,7 @@ namespace pinklet.Controllers
         [HttpPut("user/update-profile")]
         [Authorize]
         [EnableCors("AllowFrontend")]
-        public async Task<IActionResult> UpdateProfileWithImage([FromForm] IFormFile profileImage, [FromForm] string phoneNumber)
+        public async Task<IActionResult> UpdateProfileWithImage([FromBody] UserProfileUpdateRequest request)
         {
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim))
@@ -269,14 +270,14 @@ namespace pinklet.Controllers
 
             // Upload profile image to Cloudinary
             string imageUrl = user.ProfileImageLink;
-            if (profileImage != null)
+            if (request.ProfileImage != null)
             {
-                imageUrl = await _cloudinaryService.UploadImageAsync(profileImage);
+                imageUrl = await _cloudinaryService.UploadImageAsync(request.ProfileImage);
                 if (string.IsNullOrEmpty(imageUrl))
                     return StatusCode(500, "Image upload failed.");
             }
 
-            user.PhoneNumber = phoneNumber;
+            user.PhoneNumber = request.PhoneNumber;
             user.ProfileImageLink = imageUrl;
 
             _context.Users.Update(user);
@@ -344,7 +345,7 @@ namespace pinklet.Controllers
         // Send OTP email for account recovery
         private async Task SendOTPEmail(User user)
         {
-            
+
             var mailMessage = new MailMessage
             {
                 From = new MailAddress(_emailSettings.SenderEmail),
@@ -399,7 +400,7 @@ namespace pinklet.Controllers
     {
         public string Email { get; set; }
         public string Name { get; set; }
-        public string Sub { get; set; } 
+        public string Sub { get; set; }
         public string Picture { get; set; }
     }
 
@@ -412,5 +413,10 @@ namespace pinklet.Controllers
         public string PhoneNumber { get; set; }
         public string ProfileImageLink { get; set; }
     }
+    public class UserProfileUpdateRequest
+    {
+        public string PhoneNumber { get; set; }
+        public IFormFile ProfileImage { get; set; }
 
+    }
 }
