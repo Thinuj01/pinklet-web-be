@@ -258,7 +258,7 @@ namespace pinklet.Controllers
         [HttpPut("user/update-profile")]
         [Authorize]
         [EnableCors("AllowFrontend")]
-        public async Task<IActionResult> UpdateProfileWithImage([FromBody] UserProfileUpdateRequest request)
+        public async Task<IActionResult> UpdateProfileWithImage([FromForm] UserProfileUpdateRequest request)
         {
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim))
