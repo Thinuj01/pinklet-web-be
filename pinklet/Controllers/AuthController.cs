@@ -198,7 +198,7 @@ namespace pinklet.Controllers
 
         // GET: api/Auth/user/{id}
         // API for getting user details by ID, requires JWT authentication
-        [HttpGet("user/{id}")]
+        [HttpGet("user/{id:int}")]
         [Authorize] // Requires valid JWT
         public async Task<IActionResult> GetUserDetails(int id)
         {
@@ -254,8 +254,8 @@ namespace pinklet.Controllers
             return Ok("Email verified susccessfully");
         }
 
-        // PUT: api/Auth/user/update
-        [HttpPut("user/update")]
+        // PUT: api/Auth/user/update-profile
+        [HttpPut("user/update-profile")]
         [Authorize]
         [EnableCors("AllowFrontend")]
         public async Task<IActionResult> UpdateProfileWithImage([FromForm] UserProfileUpdateRequest request)
