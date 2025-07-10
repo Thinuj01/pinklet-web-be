@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using pinklet.data;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using pinklet.data;
 using pinklet.Models;
+using System.Security.Claims;
 
 namespace pinklet.Controllers
 {
@@ -60,15 +62,28 @@ namespace pinklet.Controllers
         }
 
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetPackageById(int id)
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GetPackageByUserId()
         {
+            // Get user ID from JWT claims
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "id" || c.Type == ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID claim not found.");
+            }
+
+            if (!int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return BadRequest("Invalid user ID claim.");
+            }
+
             var package = await _context.Packages
                 .Include(p => p.ItemPackages)
                     .ThenInclude(ip => ip.Item)
                 .Include(p => p.Cake)
                 .Include(p => p.ThreeDCake)
-                .FirstOrDefaultAsync(p => p.Id == id);
+                .FirstOrDefaultAsync(p => p.UserId == userId);  // get package by UserId
 
             if (package == null)
             {
@@ -94,6 +109,7 @@ namespace pinklet.Controllers
 
             return Ok(dto);
         }
+
 
 
 
