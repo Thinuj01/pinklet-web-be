@@ -122,6 +122,54 @@ namespace pinklet.Controllers
             return Ok(new { message = "Cake marked as requested successfully." });
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateCake(int id, [FromBody] _3DCakeModel updatedCake)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (updatedCake == null || updatedCake.CakeLayers == null)
+            {
+                return BadRequest("Cake and layers data is required.");
+            }
+
+            var existingCake = await _context.Cakes3dModel
+                .Include(c => c.CakeLayers)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (existingCake == null)
+            {
+                return NotFound("Cake not found.");
+            }
+
+            // Update cake properties
+            existingCake.Occation = updatedCake.Occation;
+            existingCake.BaseShape = updatedCake.BaseShape;
+            existingCake.BaseShapeSize = updatedCake.BaseShapeSize;
+            existingCake.NoLayers = updatedCake.NoLayers;
+            existingCake.LayerShape = updatedCake.LayerShape;
+            existingCake.IcingType = updatedCake.IcingType;
+            existingCake.Toppers = updatedCake.Toppers;
+            existingCake.IsReqested = updatedCake.IsReqested;
+
+            // Remove old layers
+            _context.CakeLayers.RemoveRange(existingCake.CakeLayers);
+
+            // Add new layers
+            foreach (var layer in updatedCake.CakeLayers)
+            {
+                layer.CakeId = id;
+                _context.CakeLayers.Add(layer);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Cake updated successfully." });
+        }
+
+
 
     }
 
