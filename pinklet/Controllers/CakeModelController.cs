@@ -34,7 +34,16 @@ namespace pinklet.Controllers
                 return BadRequest("Cake data is required.");
             }
 
-            // Remove this manual JSON parsing - let model binding handle it
+            // Generate unique CakeCode
+            string code;
+            do
+            {
+                code = GenerateUniqueCakeCode();
+            } while (await _context.Cakes3dModel.AnyAsync(c => c.CakeCode == code));
+
+            cake.CakeCode = code;
+
+            // Avoid circular references
             foreach (var layer in cake.CakeLayers)
             {
                 layer.Cake = null;
@@ -43,8 +52,9 @@ namespace pinklet.Controllers
             _context.Cakes3dModel.Add(cake);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Cake and layers added successfully", cake.Id });
+            return Ok(new { message = "Cake and layers added successfully", cake.Id, cake.CakeCode });
         }
+
 
 
         [HttpGet("{id}")]
@@ -151,7 +161,7 @@ namespace pinklet.Controllers
             existingCake.NoLayers = updatedCake.NoLayers;
             existingCake.LayerShape = updatedCake.LayerShape;
             existingCake.IcingType = updatedCake.IcingType;
-            existingCake.Toppers = updatedCake.Toppers;
+            existingCake.Toppers = updatedCake.Toppers; 
             existingCake.IsReqested = updatedCake.IsReqested;
 
             // Remove old layers
@@ -167,6 +177,18 @@ namespace pinklet.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Cake updated successfully." });
+        }
+        private string GenerateUniqueCakeCode()
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            var random = new Random();
+
+            string letters = new string(Enumerable.Range(0, 3)
+                .Select(_ => chars[random.Next(chars.Length)]).ToArray());
+
+            string numbers = random.Next(10000, 99999).ToString("D5");
+
+            return letters + numbers;
         }
 
 
