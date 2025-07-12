@@ -7,8 +7,7 @@ namespace pinklet.Models
     {
         [Key]
         public int Id { get; set; }
-
-        public string CakeCode { get; set; }
+        public string? CakeCode { get; set; }
         public int UserId { get; set; }
 
         public string Occation { get; set; }
