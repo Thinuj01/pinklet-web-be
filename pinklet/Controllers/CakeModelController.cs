@@ -52,7 +52,7 @@ namespace pinklet.Controllers
             _context.Cakes3dModel.Add(cake);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Cake and layers added successfully", cakeId=cake.Id });
+            return Ok(new { message = "Cake and layers added successfully", cakeId = cake.Id });
         }
 
 
@@ -125,6 +125,7 @@ namespace pinklet.Controllers
 
             // Set IsReqested to true
             cake.IsReqested = true;
+            cake.RequestedDate = DateTime.UtcNow;
 
             // Save changes to DB
             await _context.SaveChangesAsync();
