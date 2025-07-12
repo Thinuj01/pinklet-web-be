@@ -52,7 +52,7 @@ namespace pinklet.Controllers
             _context.Cakes3dModel.Add(cake);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Cake and layers added successfully", cake.Id, cake.CakeCode });
+            return Ok(new { message = "Cake and layers added successfully", cakeId=cake.Id });
         }
 
 
@@ -176,7 +176,7 @@ namespace pinklet.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Cake updated successfully." });
+            return Ok(new { message = "Cake updated successfully.", cakeId = existingCake.Id });
         }
         private string GenerateUniqueCakeCode()
         {
