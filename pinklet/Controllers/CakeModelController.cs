@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using pinklet.data;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using pinklet.data;
 using pinklet.Models;
+using System.Security.Claims;
 
 namespace pinklet.Controllers
 {
@@ -62,7 +64,66 @@ namespace pinklet.Controllers
             }
             return Ok(cake);
         }
+
+
+        [HttpGet("user")]
+        [Authorize]
+        public async Task<IActionResult> GetCake()
+        {
+            
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId" || c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim))
+            {
+                return Unauthorized("User ID claim missing in token.");
+            }
+
+            
+            if (!int.TryParse(userIdClaim, out int userId))
+            {
+                return BadRequest("Invalid user ID format.");
+            }
+
+           
+            var cakes = await _context.Cakes3dModel
+                .Include(c => c.CakeLayers)
+                .Where(c => c.UserId == userId)
+                .ToListAsync();
+
+           
+            foreach (var cake in cakes)
+            {
+                foreach (var layer in cake.CakeLayers)
+                {
+                    layer.Cake = null;
+                }
+            }
+
+            return Ok(cakes);
+        }
+
+        [HttpPut("request/{id}")]
+        public async Task<IActionResult> MarkCakeAsRequested(int id)
+        {
+            // Find the cake by ID
+            var cake = await _context.Cakes3dModel.FirstOrDefaultAsync(c => c.Id == id);
+
+            if (cake == null)
+            {
+                return NotFound("Cake not found.");
+            }
+
+            // Set IsReqested to true
+            cake.IsReqested = true;
+
+            // Save changes to DB
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Cake marked as requested successfully." });
+        }
+
+
     }
 
-    
+
 }

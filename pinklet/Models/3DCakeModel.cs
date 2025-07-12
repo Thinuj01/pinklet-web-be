@@ -22,7 +22,11 @@ namespace pinklet.Models
 
         public string IcingType { get; set; }
 
-        public string? Toppers { get; set; } 
+        public string? Toppers { get; set; }
+        
+        public bool? IsReqested { get; set; } = false;
+
+        public double? RequestedPrice { get; set; } = null;
 
         public ICollection<CakeLayerModel> CakeLayers { get; set; } = new List<CakeLayerModel>();
 
