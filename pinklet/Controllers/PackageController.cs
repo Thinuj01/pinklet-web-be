@@ -123,45 +123,40 @@ namespace pinklet.Controllers
             }
         }
 
+    }
+    public class PackageDTO
+    {
+        public string PackageCode { get; set; }
+        public int UserId { get; set; }
+        public int? CakeId { get; set; }
+        public int? ThreeDCakeId { get; set; }
 
+        public List<ItemWithQuantityDTO> Items { get; set; }  // Change from List<int> to List<ItemWithQuantityDTO>
+    }
+    public class ItemWithQuantityDTO
+    {
+        public int ItemId { get; set; }
+        public int Quantity { get; set; }
+    }
+    public class PackageDetailsDTO
+    {
+        public int Id { get; set; }
+        public string PackageCode { get; set; }
+        public int UserId { get; set; }
 
+        public List<ItemDTO> Items { get; set; }
 
+        public Cake? Cake { get; set; }
+        public _3DCakeModel? ThreeDCake { get; set; }
+    }
 
-        public class PackageDTO
-        {
-            public string PackageCode { get; set; }
-            public int UserId { get; set; }
-            public int? CakeId { get; set; }
-            public int? ThreeDCakeId { get; set; }
-
-            public List<ItemWithQuantityDTO> Items { get; set; }  // Change from List<int> to List<ItemWithQuantityDTO>
-        }
-        public class ItemWithQuantityDTO
-        {
-            public int ItemId { get; set; }
-            public int Quantity { get; set; }
-        }
-        public class PackageDetailsDTO
-        {
-            public int Id { get; set; }
-            public string PackageCode { get; set; }
-            public int UserId { get; set; }
-
-            public List<ItemDTO> Items { get; set; }
-
-            public Cake? Cake { get; set; }
-            public _3DCakeModel? ThreeDCake { get; set; }
-        }
-
-        public class ItemDTO
-        {
-            public int Id { get; set; }
-            public string ItemCode { get; set; }
-            public string ItemName { get; set; }
-            public double ItemPrice { get; set; }
-            public string ItemCategory { get; set; }
-            public int Quantity { get; set; }
-        }
-
+    public class ItemDTO
+    {
+        public int Id { get; set; }
+        public string ItemCode { get; set; }
+        public string ItemName { get; set; }
+        public double ItemPrice { get; set; }
+        public string ItemCategory { get; set; }
+        public int Quantity { get; set; }
     }
 }
