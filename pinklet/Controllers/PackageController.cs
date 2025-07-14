@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using pinklet.data;
 using pinklet.Models;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
 namespace pinklet.Controllers
@@ -23,6 +24,13 @@ namespace pinklet.Controllers
             _logger = logger;
         }
 
+        // Helper to get current user ID
+        private int? GetCurrentUserId()
+        {
+            var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return int.TryParse(idClaim, out var id) ? id : (int?)null;
+        }
+
         // POST: api/package
         [HttpPost]
         public async Task<IActionResult> AddPackage([FromBody] PackageDTO dto)
@@ -30,29 +38,27 @@ namespace pinklet.Controllers
             try
             {
                 if (!ModelState.IsValid || dto == null)
-                    return BadRequest("Invalid package data.");
+                    return BadRequest(ModelState);
 
-                // Ensure only one cake type is selected
                 bool hasCake = dto.CakeId.HasValue;
                 bool has3DCake = dto.ThreeDCakeId.HasValue;
 
                 if (hasCake == has3DCake)
-                {
                     return BadRequest("You must provide either CakeId or ThreeDCakeId, but not both.");
-                }
 
                 var package = new Package
                 {
                     PackageCode = dto.PackageCode,
                     UserId = dto.UserId,
-                    CakeId = dto.CakeId ?? null,
-                    ThreeDCakeId = dto.ThreeDCakeId ?? null,
+                    CakeId = dto.CakeId,
+                    ThreeDCakeId = dto.ThreeDCakeId,
                     ItemPackages = dto.Items.Select(i => new ItemPackage
                     {
                         ItemId = i.ItemId,
                         Quantity = i.Quantity
                     }).ToList()
                 };
+
                 _context.Packages.Add(package);
                 await _context.SaveChangesAsync();
 
@@ -61,43 +67,33 @@ namespace pinklet.Controllers
             catch (DbUpdateException ex)
             {
                 var inner = ex.InnerException?.Message ?? "No inner exception";
-                Console.WriteLine($"❌ DB Update Error: {inner}");
+                _logger.LogError(ex, "Database update error: {Error}", inner);
                 return StatusCode(500, $"Internal server error: {inner}");
             }
-
         }
 
-
+        // GET: api/package
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> GetPackageByUserId()
         {
             try
             {
-                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "id" || c.Type == ClaimTypes.NameIdentifier)?.Value;
-                if (userIdClaim == null)
-                {
-                    return Unauthorized("User ID claim not found.");
-                }
+                var userId = GetCurrentUserId();
+                if (!userId.HasValue)
+                    return Unauthorized("User ID claim not found or invalid.");
 
-                if (!int.TryParse(userIdClaim, out int userId))
-                {
-                    return BadRequest("Invalid user ID claim.");
-                }
-
-                var package = await _context.Packages
-                    .Include(p => p.ItemPackages)
-                        .ThenInclude(ip => ip.Item)
+                var packages = await _context.Packages
+                    .Where(p => p.UserId == userId)
+                    .Include(p => p.ItemPackages).ThenInclude(ip => ip.Item)
                     .Include(p => p.Cake)
                     .Include(p => p.ThreeDCake)
-                    .FirstOrDefaultAsync(p => p.UserId == userId);
+                    .ToListAsync();
 
-                if (package == null)
-                {
-                    return NotFound("Package not found.");
-                }
+                if (!packages.Any())
+                    return NotFound("No packages found for this user.");
 
-                var dto = new PackageDetailsDTO
+                var dtoList = packages.Select(package => new PackageDetailsDTO
                 {
                     Id = package.Id,
                     PackageCode = package.PackageCode,
@@ -115,41 +111,49 @@ namespace pinklet.Controllers
                             ItemCategory = ip.Item.ItemCategory,
                             Quantity = ip.Quantity
                         }).ToList()
-                };
+                }).ToList();
 
-                return Ok(dto);
+                return Ok(dtoList);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching package by user ID");
-                Console.WriteLine($"🔥 Exception in GET: {ex.Message}");
+                _logger.LogError(ex, "Error fetching packages for user");
                 return StatusCode(500, $"Server error: {ex.Message}");
             }
         }
-
     }
+
     public class PackageDTO
     {
+        [Required]
         public string PackageCode { get; set; }
+
+        [Required]
         public int UserId { get; set; }
+
         public int? CakeId { get; set; }
         public int? ThreeDCakeId { get; set; }
 
-        public List<ItemWithQuantityDTO> Items { get; set; }  // Change from List<int> to List<ItemWithQuantityDTO>
+        [Required]
+        [MinLength(1, ErrorMessage = "At least one item is required.")]
+        public List<ItemWithQuantityDTO> Items { get; set; }
     }
+
     public class ItemWithQuantityDTO
     {
+        [Required]
         public int ItemId { get; set; }
+
+        [Range(1, int.MaxValue, ErrorMessage = "Quantity must be at least 1.")]
         public int Quantity { get; set; }
     }
+
     public class PackageDetailsDTO
     {
         public int Id { get; set; }
         public string PackageCode { get; set; }
         public int UserId { get; set; }
-
         public List<ItemDTO> Items { get; set; }
-
         public Cake? Cake { get; set; }
         public _3DCakeModel? ThreeDCake { get; set; }
     }
