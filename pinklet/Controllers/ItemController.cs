@@ -57,7 +57,9 @@ namespace pinklet.Controllers
                     ItemPrice = i.ItemPrice,
                     VendorId = i.VendorId,
                     VendorName = i.Vendor.FirstName + " " + i.Vendor.LastName,
-                    VendorEmail = i.Vendor.Email
+                    VendorEmail = i.Vendor.Email,
+                    ImageUrl = i.ItemImageLink1,
+                    ItemRate = i.ItemRating,
                 })
                 .ToListAsync();
 
@@ -81,6 +83,8 @@ namespace pinklet.Controllers
             public int VendorId { get; set; }
             public string VendorName { get; set; }
             public string VendorEmail { get; set; }
+            public string? ImageUrl { get; set; }
+            public int ItemRate { get; set; }
         }
 
     }
