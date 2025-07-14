@@ -44,9 +44,12 @@ namespace pinklet.Controllers
                     UserId = dto.UserId,
                     CakeId = dto.CakeId ?? null,
                     ThreeDCakeId = dto.ThreeDCakeId ?? null,
-                    ItemPackages = dto.ItemIds.Select(id => new ItemPackage { ItemId = id }).ToList()
+                    ItemPackages = dto.Items.Select(i => new ItemPackage
+                    {
+                        ItemId = i.ItemId,
+                        Quantity = i.Quantity
+                    }).ToList()
                 };
-
                 _context.Packages.Add(package);
                 await _context.SaveChangesAsync();
 
@@ -103,7 +106,8 @@ namespace pinklet.Controllers
                     ItemCode = ip.Item.ItemCode,
                     ItemName = ip.Item.ItemName,
                     ItemPrice = ip.Item.ItemPrice,
-                    ItemCategory = ip.Item.ItemCategory
+                    ItemCategory = ip.Item.ItemCategory,
+                    Quantity = ip.Quantity  // Set quantity here
                 }).ToList()
             };
 
@@ -117,9 +121,15 @@ namespace pinklet.Controllers
         {
             public string PackageCode { get; set; }
             public int UserId { get; set; }
-            public int? CakeId { get; set; }  // nullable
-            public int? ThreeDCakeId { get; set; }  // nullable
-            public List<int> ItemIds { get; set; }
+            public int? CakeId { get; set; }
+            public int? ThreeDCakeId { get; set; }
+
+            public List<ItemWithQuantityDTO> Items { get; set; }  // Change from List<int> to List<ItemWithQuantityDTO>
+        }
+        public class ItemWithQuantityDTO
+        {
+            public int ItemId { get; set; }
+            public int Quantity { get; set; }
         }
         public class PackageDetailsDTO
         {
@@ -140,6 +150,7 @@ namespace pinklet.Controllers
             public string ItemName { get; set; }
             public double ItemPrice { get; set; }
             public string ItemCategory { get; set; }
+            public int Quantity { get; set; }
         }
 
     }

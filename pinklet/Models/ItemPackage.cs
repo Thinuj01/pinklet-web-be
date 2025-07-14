@@ -8,7 +8,8 @@ namespace pinklet.Models
 
         public int PackageId { get; set; }
         public Package Package { get; set; }
-
+        
+        public int Quantity { get; set; } = 1;
 
     }
 }
