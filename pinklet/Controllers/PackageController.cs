@@ -69,50 +69,60 @@ namespace pinklet.Controllers
         [Authorize]
         public async Task<IActionResult> GetPackageByUserId()
         {
-            // Get user ID from JWT claims
-            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "id" || c.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim == null)
+            try
             {
-                return Unauthorized("User ID claim not found.");
-            }
-
-            if (!int.TryParse(userIdClaim, out int userId))
-            {
-                return BadRequest("Invalid user ID claim.");
-            }
-
-            var package = await _context.Packages
-                .Include(p => p.ItemPackages)
-                    .ThenInclude(ip => ip.Item)
-                .Include(p => p.Cake)
-                .Include(p => p.ThreeDCake)
-                .FirstOrDefaultAsync(p => p.UserId == userId);  // get package by UserId
-
-            if (package == null)
-            {
-                return NotFound("Package not found.");
-            }
-
-            var dto = new PackageDetailsDTO
-            {
-                Id = package.Id,
-                PackageCode = package.PackageCode,
-                UserId = package.UserId,
-                Cake = package.CakeId != 0 ? package.Cake : null,
-                ThreeDCake = package.ThreeDCakeId != 0 ? package.ThreeDCake : null,
-                Items = package.ItemPackages.Select(ip => new ItemDTO
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "id" || c.Type == ClaimTypes.NameIdentifier)?.Value;
+                if (userIdClaim == null)
                 {
-                    Id = ip.Item.Id,
-                    ItemCode = ip.Item.ItemCode,
-                    ItemName = ip.Item.ItemName,
-                    ItemPrice = ip.Item.ItemPrice,
-                    ItemCategory = ip.Item.ItemCategory,
-                    Quantity = ip.Quantity  // Set quantity here
-                }).ToList()
-            };
+                    return Unauthorized("User ID claim not found.");
+                }
 
-            return Ok(dto);
+                if (!int.TryParse(userIdClaim, out int userId))
+                {
+                    return BadRequest("Invalid user ID claim.");
+                }
+
+                var package = await _context.Packages
+                    .Include(p => p.ItemPackages)
+                        .ThenInclude(ip => ip.Item)
+                    .Include(p => p.Cake)
+                    .Include(p => p.ThreeDCake)
+                    .FirstOrDefaultAsync(p => p.UserId == userId);
+
+                if (package == null)
+                {
+                    return NotFound("Package not found.");
+                }
+
+                var dto = new PackageDetailsDTO
+                {
+                    Id = package.Id,
+                    PackageCode = package.PackageCode,
+                    UserId = package.UserId,
+                    Cake = package.CakeId.HasValue ? package.Cake : null,
+                    ThreeDCake = package.ThreeDCakeId.HasValue ? package.ThreeDCake : null,
+                    Items = package.ItemPackages
+                        .Where(ip => ip.Item != null)
+                        .Select(ip => new ItemDTO
+                        {
+                            Id = ip.Item.Id,
+                            ItemCode = ip.Item.ItemCode,
+                            ItemName = ip.Item.ItemName,
+                            ItemPrice = ip.Item.ItemPrice,
+                            ItemCategory = ip.Item.ItemCategory,
+                            Quantity = ip.Quantity
+                        }).ToList()
+                };
+
+                return Ok(dto);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"🔥 Exception in GET: {ex.Message}");
+                return StatusCode(500, $"Server error: {ex.Message}");
+            }
         }
+
 
 
 
