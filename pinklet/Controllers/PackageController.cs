@@ -150,47 +150,48 @@ namespace pinklet.Controllers
 
 
         public class PackageDTO
-    {
-        [Required]
-        public string PackageCode { get; set; }
+        {
+            [Required]
+            public string PackageCode { get; set; }
 
-        [Required]
-        public int UserId { get; set; }
+            [Required]
+            public int UserId { get; set; }
 
-        public int? CakeId { get; set; }
-        public int? ThreeDCakeId { get; set; }
+            public int? CakeId { get; set; }
+            public int? ThreeDCakeId { get; set; }
 
-        [Required]
-        [MinLength(1, ErrorMessage = "At least one item is required.")]
-        public List<ItemWithQuantityDTO> Items { get; set; }
-    }
+            [Required]
+            [MinLength(1, ErrorMessage = "At least one item is required.")]
+            public List<ItemWithQuantityDTO> Items { get; set; }
+        }
 
-    public class ItemWithQuantityDTO
-    {
-        [Required]
-        public int ItemId { get; set; }
+        public class ItemWithQuantityDTO
+        {
+            [Required]
+            public int ItemId { get; set; }
 
-        [Range(1, int.MaxValue, ErrorMessage = "Quantity must be at least 1.")]
-        public int Quantity { get; set; }
-    }
+            [Range(1, int.MaxValue, ErrorMessage = "Quantity must be at least 1.")]
+            public int Quantity { get; set; }
+        }
 
-    public class PackageDetailsDTO
-    {
-        public int Id { get; set; }
-        public string PackageCode { get; set; }
-        public int UserId { get; set; }
-        public List<ItemDTO> Items { get; set; }
-        public Cake? Cake { get; set; }
-        public _3DCakeModel? ThreeDCake { get; set; }
-    }
+        public class PackageDetailsDTO
+        {
+            public int Id { get; set; }
+            public string PackageCode { get; set; }
+            public int UserId { get; set; }
+            public List<ItemDTO> Items { get; set; }
+            public Cake? Cake { get; set; }
+            public _3DCakeModel? ThreeDCake { get; set; }
+        }
 
-    public class ItemDTO
-    {
-        public int Id { get; set; }
-        public string ItemCode { get; set; }
-        public string ItemName { get; set; }
-        public double ItemPrice { get; set; }
-        public string ItemCategory { get; set; }
-        public int Quantity { get; set; }
+        public class ItemDTO
+        {
+            public int Id { get; set; }
+            public string ItemCode { get; set; }
+            public string ItemName { get; set; }
+            public double ItemPrice { get; set; }
+            public string ItemCategory { get; set; }
+            public int Quantity { get; set; }
+        }
     }
 }
