@@ -70,13 +70,13 @@ namespace pinklet.Controllers
         public async Task<IActionResult> GetPackageByUserId()
         {
             // Get user ID from JWT claims
-            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "id" || c.Type == ClaimTypes.NameIdentifier);
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "id" || c.Type == ClaimTypes.NameIdentifier)?.Value;
             if (userIdClaim == null)
             {
                 return Unauthorized("User ID claim not found.");
             }
 
-            if (!int.TryParse(userIdClaim.Value, out int userId))
+            if (!int.TryParse(userIdClaim, out int userId))
             {
                 return BadRequest("Invalid user ID claim.");
             }
