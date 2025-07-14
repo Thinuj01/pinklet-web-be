@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using pinklet.data;
 using pinklet.Models;
 using System.Security.Claims;
@@ -13,11 +14,13 @@ namespace pinklet.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration configuration;
+        private readonly ILogger<PackageController> _logger;
 
-        public PackageController(ApplicationDbContext context, IConfiguration configuration)
+        public PackageController(ApplicationDbContext context, IConfiguration configuration, ILogger<PackageController> logger)
         {
             _context = context;
             this.configuration = configuration;
+            _logger = logger;
         }
 
         // POST: api/package
@@ -118,6 +121,7 @@ namespace pinklet.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error fetching package by user ID");
                 Console.WriteLine($"🔥 Exception in GET: {ex.Message}");
                 return StatusCode(500, $"Server error: {ex.Message}");
             }
