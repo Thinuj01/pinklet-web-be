@@ -79,27 +79,53 @@ namespace pinklet.Controllers
         {
             try
             {
-                var userId = GetCurrentUserId();
-                if (!userId.HasValue)
-                    return Unauthorized("User ID claim not found or invalid.");
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "id" || c.Type == ClaimTypes.NameIdentifier)?.Value;
+                if (userIdClaim == null)
+                {
+                    return Unauthorized("User ID claim not found.");
+                }
 
-                var packages = await _context.Packages
-                    .Where(p => p.UserId == userId)
-                    .Include(p => p.ItemPackages).ThenInclude(ip => ip.Item)
+                if (!int.TryParse(userIdClaim, out int userId))
+                {
+                    return BadRequest("Invalid user ID claim.");
+                }
+
+                var package = await _context.Packages
+                    .Include(p => p.ItemPackages)
+                        .ThenInclude(ip => ip.Item)
                     .Include(p => p.Cake)
                     .Include(p => p.ThreeDCake)
-                    .ToListAsync();
+                    .AsNoTracking() // Prevent EF tracking (avoid lazy loading & loops)
+                    .FirstOrDefaultAsync(p => p.UserId == userId);
 
-                if (!packages.Any())
-                    return NotFound("No packages found for this user.");
+                if (package == null)
+                {
+                    return NotFound("Package not found.");
+                }
 
-                var dtoList = packages.Select(package => new PackageDetailsDTO
+                // ✅ Only use the DTO — do NOT return 'package' itself
+                var dto = new PackageDetailsDTO
                 {
                     Id = package.Id,
                     PackageCode = package.PackageCode,
                     UserId = package.UserId,
-                    Cake = package.CakeId.HasValue ? package.Cake : null,
-                    ThreeDCake = package.ThreeDCakeId.HasValue ? package.ThreeDCake : null,
+                    Cake = package.CakeId.HasValue ? new Cake
+                    {
+                        Id = package.Cake.Id,
+                        CakeName = package.Cake.CakeName,
+                        CakePrice = package.Cake.CakePrice,
+                        CakeDescription = package.Cake.CakeDescription,
+                        CakeImageLink1 = package.Cake.CakeImageLink1
+                        // Add only fields you need
+                    } : null,
+                    ThreeDCake = package.ThreeDCakeId.HasValue ? new _3DCakeModel
+                    {
+                        Id = package.ThreeDCake.Id,
+                        CakeCode = package.ThreeDCake.CakeCode,
+                        BaseShape = package.ThreeDCake.BaseShape,
+                        IcingType = package.ThreeDCake.IcingType
+                        // Add only fields you need
+                    } : null,
                     Items = package.ItemPackages
                         .Where(ip => ip.Item != null)
                         .Select(ip => new ItemDTO
@@ -111,19 +137,19 @@ namespace pinklet.Controllers
                             ItemCategory = ip.Item.ItemCategory,
                             Quantity = ip.Quantity
                         }).ToList()
-                }).ToList();
+                };
 
-                return Ok(dtoList);
+                return Ok(dto); // ✅ Return only the DTO
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching packages for user");
+                _logger.LogError(ex, "Error fetching package by user ID");
                 return StatusCode(500, $"Server error: {ex.Message}");
             }
         }
-    }
 
-    public class PackageDTO
+
+        public class PackageDTO
     {
         [Required]
         public string PackageCode { get; set; }
