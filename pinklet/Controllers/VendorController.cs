@@ -66,7 +66,11 @@ namespace pinklet.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = "An error occurred.", error = ex.Message });
+                return BadRequest(new
+                {
+                    error = "An error occurred while saving the vendor.",
+                    details = ex.InnerException?.Message ?? ex.Message
+                });
             }
         }
 
