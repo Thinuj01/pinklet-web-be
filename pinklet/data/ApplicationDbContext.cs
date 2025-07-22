@@ -17,6 +17,9 @@ namespace pinklet.data
         public DbSet<ItemPackage> ItemPackages { get; set; }
         public DbSet<Cart> Carts { get; set; }
 
+        // ✅ New: Vendor table
+        public DbSet<Vendor> Vendors { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -35,28 +38,28 @@ namespace pinklet.data
                 .WithMany(p => p.ItemPackages)
                 .HasForeignKey(ip => ip.PackageId);
 
-            // ✅ User → Cart (One-to-Many) with Restrict to avoid cascade path issues  
+            // ✅ User → Cart (One-to-Many)
             modelBuilder.Entity<Cart>()
                 .HasOne(c => c.User)
                 .WithMany(u => u.Carts)
                 .HasForeignKey(c => c.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // ✅ Package → Cart (One-to-One) with Restrict  
+            // ✅ Package → Cart (One-to-One)
             modelBuilder.Entity<Cart>()
                 .HasOne(c => c.Package)
                 .WithOne(p => p.Cart)
                 .HasForeignKey<Cart>(c => c.PackageId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // ✅ User → Package (One-to-Many) with Restrict to avoid multiple cascade paths  
+            // ✅ User → Package (One-to-Many)
             modelBuilder.Entity<Package>()
                 .HasOne(p => p.User)
                 .WithMany(u => u.Packages)
                 .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // (Optional) Package → Cake and Package → 3DModel can stay as Cascade  
+            // ✅ Package → Cake & 3DCake (Cascade)
             modelBuilder.Entity<Package>()
                 .HasOne(p => p.Cake)
                 .WithMany(c => c.Packages)
@@ -68,6 +71,13 @@ namespace pinklet.data
                 .WithMany()
                 .HasForeignKey(p => p.ThreeDCakeId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // ✅ User → Vendor (One-to-One) Restrict (if 1 user can register as 1 vendor)
+            modelBuilder.Entity<Vendor>()
+                .HasOne(v => v.User)
+                .WithOne() // or .WithOne(u => u.Vendor) if you add navigation property in User
+                .HasForeignKey<Vendor>(v => v.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
