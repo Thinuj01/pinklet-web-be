@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using pinklet.data;
 using Microsoft.EntityFrameworkCore;
+using pinklet.data;
 using pinklet.Models;
 
 namespace pinklet.Controllers
@@ -10,35 +10,64 @@ namespace pinklet.Controllers
     public class ItemController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly IConfiguration configuration;
+        private readonly IConfiguration _configuration;
+        private readonly CloudinaryService _cloudinaryService;
 
-        public ItemController(ApplicationDbContext context, IConfiguration configuration)
+        public ItemController(ApplicationDbContext context, IConfiguration configuration, CloudinaryService cloudinaryService)
         {
             _context = context;
-            this.configuration = configuration;
+            _configuration = configuration;
+            _cloudinaryService = cloudinaryService;
         }
 
-        // POST: api/item
         [HttpPost]
-        public async Task<IActionResult> AddItem([FromBody] Item item)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> AddItem([FromForm] ItemCreateDto itemDto)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                // Upload image files (up to 5)
+                var uploadedUrls = new List<string>();
+                foreach (var file in itemDto.ItemImages.Where(f => f != null))
+                {
+                    var url = await _cloudinaryService.UploadImageAsync(file);
+                    uploadedUrls.Add(url);
+                }
 
-            if (item == null)
+                // Create item
+                var item = new Item
+                {
+                    ItemName = itemDto.ItemName,
+                    ItemCategory = itemDto.ItemCategory,
+                    ItemSubCategory = itemDto.ItemSubCategory,
+                    ItemDescription = itemDto.ItemDescription,
+                    ItemStock = itemDto.ItemStock,
+                    ItemTags = itemDto.ItemTags,
+                    VendorId = itemDto.VendorId,
+                    ItemRating = 0,
+                    ItemImageLink1 = uploadedUrls.ElementAtOrDefault(0),
+                    ItemImageLink2 = uploadedUrls.ElementAtOrDefault(1),
+                    ItemImageLink3 = uploadedUrls.ElementAtOrDefault(2),
+                    ItemImageLink4 = uploadedUrls.ElementAtOrDefault(3),
+                    ItemImageLink5 = uploadedUrls.ElementAtOrDefault(4)
+                };
+
+                item.Vendor = null;
+
+                _context.Items.Add(item);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { success = true, message = "Item added successfully", item.Id });
+            }
+            catch (Exception ex)
             {
-                return BadRequest("Item data is required.");
+                return BadRequest(new
+                {
+                    success = false,
+                    error = "An error occurred while saving the item.",
+                    details = ex.InnerException?.Message ?? ex.Message
+                });
             }
-
-            // Ensure Vendor is not accidentally populated
-            item.Vendor = null;
-
-            _context.Items.Add(item);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = "Item added successfully", item.Id });
         }
 
         // GET: api/item
@@ -77,7 +106,6 @@ namespace pinklet.Controllers
             return Ok(items);
         }
 
-
         public class ItemWithVendorDTO
         {
             public int Id { get; set; }
@@ -99,5 +127,16 @@ namespace pinklet.Controllers
             public int ItemRate { get; set; }
         }
 
+        public class ItemCreateDto
+        {
+            public string ItemName { get; set; }
+            public string ItemCategory { get; set; }
+            public string ItemSubCategory { get; set; }
+            public string ItemDescription { get; set; }
+            public string ItemTags { get; set; }
+            public int ItemStock { get; set; }
+            public int VendorId { get; set; }
+            public List<IFormFile?> ItemImages { get; set; } = new();
+        }
     }
 }
