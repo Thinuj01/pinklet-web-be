@@ -14,6 +14,7 @@ namespace pinklet.Models
         public string ItemCode { get; set; }
         public string ItemName { get; set; }
         public string ItemCategory { get; set; }
+        public string ItemSubCategory { get; set; }
         public string ItemTags { get; set; }
         public double ItemPrice { get; set; }
         public int ItemRating { get; set; }
@@ -22,6 +23,7 @@ namespace pinklet.Models
         public string? ItemImageLink2 { get; set; }
         public string? ItemImageLink3 { get; set; }
         public string? ItemImageLink4 { get; set; }
+        public string? ItemImageLink5 { get; set; }
 
         public ICollection<ItemPackage> ItemPackages { get; set; } = new List<ItemPackage>();
     }

@@ -53,12 +53,17 @@ namespace pinklet.Controllers
                     ItemCode = i.ItemCode,
                     ItemName = i.ItemName,
                     ItemCategory = i.ItemCategory,
+                    ItemSubCategory = i.ItemSubCategory,
                     ItemTags = i.ItemTags,
                     ItemPrice = i.ItemPrice,
                     VendorId = i.VendorId,
                     VendorName = i.Vendor.FirstName + " " + i.Vendor.LastName,
                     VendorEmail = i.Vendor.Email,
-                    ImageUrl = i.ItemImageLink1,
+                    ImageUrl1 = i.ItemImageLink1,
+                    ImageUrl2 = i.ItemImageLink2,
+                    ImageUrl3 = i.ItemImageLink3,
+                    ImageUrl4 = i.ItemImageLink4,
+                    ImageUrl5 = i.ItemImageLink5,
                     ItemRate = i.ItemRating,
                 })
                 .ToListAsync();
@@ -78,12 +83,17 @@ namespace pinklet.Controllers
             public string ItemCode { get; set; }
             public string ItemName { get; set; }
             public string ItemCategory { get; set; }
+            public string ItemSubCategory { get; set; }
             public string ItemTags { get; set; }
             public double ItemPrice { get; set; }
             public int VendorId { get; set; }
             public string VendorName { get; set; }
             public string VendorEmail { get; set; }
-            public string? ImageUrl { get; set; }
+            public string? ImageUrl1 { get; set; }
+            public string? ImageUrl2 { get; set; }
+            public string? ImageUrl3 { get; set; }
+            public string? ImageUrl4 { get; set; }
+            public string? ImageUrl5 { get; set; }
             public int ItemRate { get; set; }
         }
 
