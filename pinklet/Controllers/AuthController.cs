@@ -193,6 +193,7 @@ namespace pinklet.Controllers
                 lname = user.LastName,
                 id = user.Id,
                 proPic = user.ProfileImageLink,
+                role = user.Role,
             });
         }
 
