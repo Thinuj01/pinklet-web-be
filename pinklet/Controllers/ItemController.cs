@@ -34,9 +34,13 @@ namespace pinklet.Controllers
                     uploadedUrls.Add(url);
                 }
 
+                // ✅ Generate ItemCode
+                string itemCode = $"ITEM-{DateTime.Now:yyyyMMddHHmmss}-{new Random().Next(1000, 9999)}";
+
                 // Create item
                 var item = new Item
                 {
+                    ItemCode = itemCode, // ✅ set generated ItemCode
                     ItemName = itemDto.ItemName,
                     ItemCategory = itemDto.ItemCategory,
                     ItemSubCategory = itemDto.ItemSubCategory,
@@ -57,7 +61,7 @@ namespace pinklet.Controllers
                 _context.Items.Add(item);
                 await _context.SaveChangesAsync();
 
-                return Ok(new { success = true, message = "Item added successfully", item.Id });
+                return Ok(new { success = true, message = "Item added successfully", item.Id, item.ItemCode });
             }
             catch (Exception ex)
             {
