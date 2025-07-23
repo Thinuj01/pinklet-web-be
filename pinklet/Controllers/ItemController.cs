@@ -55,6 +55,7 @@ namespace pinklet.Controllers
                     ItemCategory = i.ItemCategory,
                     ItemSubCategory = i.ItemSubCategory,
                     ItemTags = i.ItemTags,
+                    ItemStock = i.ItemStock,
                     ItemPrice = i.ItemPrice,
                     VendorId = i.VendorId,
                     VendorName = i.Vendor.FirstName + " " + i.Vendor.LastName,
@@ -85,6 +86,7 @@ namespace pinklet.Controllers
             public string ItemCategory { get; set; }
             public string ItemSubCategory { get; set; }
             public string ItemTags { get; set; }
+            public int ItemStock { get; set; }
             public double ItemPrice { get; set; }
             public int VendorId { get; set; }
             public string VendorName { get; set; }

@@ -16,6 +16,7 @@ namespace pinklet.Models
         public string ItemCategory { get; set; }
         public string ItemSubCategory { get; set; }
         public string ItemTags { get; set; }
+        public int ItemStock { get; set; }
         public double ItemPrice { get; set; }
         public int ItemRating { get; set; }
         public string ItemDescription { get; set; }
