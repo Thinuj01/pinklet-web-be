@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using pinklet.data;
 using pinklet.Models;
 
@@ -74,6 +75,36 @@ namespace pinklet.Controllers
             }
         }
 
+        [HttpGet("by-user/{userId}")]
+        public async Task<IActionResult> GetVendorByUserId(int userId)
+        {
+            var vendor = await _context.Vendors
+                .Where(v => v.UserId == userId)
+                .Select(v => new
+                {
+                    v.Id,
+                    v.UserId,
+                    v.ShopName,
+                    v.ShopDistrict,
+                    v.ShopCity,
+                    v.ShopDescription,
+                    v.FullName,
+                    v.IDNumber,
+                    v.ShopProfileImageLink,
+                    v.ShopCoverImageLink,
+                    v.IDImageLink1,
+                    v.IDImageLink2,
+                    v.IsVerified
+                })
+                .FirstOrDefaultAsync();
+
+            if (vendor == null)
+            {
+                return NotFound(new { success = false, message = "Vendor not found for the given userId." });
+            }
+
+            return Ok(new { success = true, vendor });
+        }
 
 
 
