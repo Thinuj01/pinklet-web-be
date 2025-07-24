@@ -92,8 +92,7 @@ namespace pinklet.Controllers
                     .AsNoTracking()
                     .ToListAsync();
 
-                if (packages.Count == 0)
-                    return NotFound("No packages found for this user.");
+               
 
                 var packageDtos = packages.Select(package => new PackageDetailsDTO
                 {

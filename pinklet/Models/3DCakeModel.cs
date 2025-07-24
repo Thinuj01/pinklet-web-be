@@ -28,7 +28,7 @@ namespace pinklet.Models
 
         public double? RequestedPrice { get; set; } = null;
 
-        public DateTimeOffset? RequestedDate { get; set; }
+        public DateTime? RequestedDate { get; set; }
 
         public ICollection<CakeLayerModel> CakeLayers { get; set; } = new List<CakeLayerModel>();
 

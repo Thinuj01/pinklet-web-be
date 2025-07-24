@@ -27,9 +27,7 @@ namespace pinklet.Models
         public string Availability {  get; set; }
 
         public string? EmailVerificationToken { get; set; }
-        [Column(TypeName = "datetimeoffset")]
-        public DateTimeOffset? TokenGeneratedAt { get; set; }
-
+        public DateTime? TokenGeneratedAt { get; set; }
         public string? ProfileImageLink { get; set; }
         public ICollection<Item> Items { get; set; } = new List<Item>();
 

@@ -27,13 +27,21 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        sqlServerOptions => sqlServerOptions.EnableRetryOnFailure(
-            maxRetryCount: 5,
-            maxRetryDelay: TimeSpan.FromSeconds(10),
-            errorNumbersToAdd: null
-        )
+    //options.UseSqlServer(
+    //    builder.Configuration.GetConnectionString("DefaultConnection"),
+    //    sqlServerOptions => sqlServerOptions.EnableRetryOnFailure(
+    //        maxRetryCount: 5,
+    //        maxRetryDelay: TimeSpan.FromSeconds(10),
+    //        errorNumbersToAdd: null
+    //    )
+    //)
+    options.UseNpgsql(
+    builder.Configuration.GetConnectionString("DefaultConnection"),
+    npgsqlOptions => npgsqlOptions.EnableRetryOnFailure(
+        maxRetryCount: 5,
+        maxRetryDelay: TimeSpan.FromSeconds(10),
+        errorCodesToAdd: null
+    )
     )
 );
 
@@ -93,7 +101,7 @@ app.UseSwaggerUI(c => {
     c.RoutePrefix = "swagger"; // or "" if you want it at root
 });
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.MapControllers();
 
