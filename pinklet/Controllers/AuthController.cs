@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -25,12 +26,14 @@ namespace pinklet.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration configuration;
         private readonly EmailSettings _emailSettings;
+        private readonly CloudinaryService _cloudinaryService;
 
-        public AuthController(ApplicationDbContext context, IConfiguration configuration, IOptions<EmailSettings> emailSettings)
+        public AuthController(ApplicationDbContext context, IConfiguration configuration, IOptions<EmailSettings> emailSettings, CloudinaryService cloudinaryService)
         {
             _context = context;
             this.configuration = configuration;
-            _emailSettings = emailSettings.Value; 
+            _emailSettings = emailSettings.Value;
+            _cloudinaryService = cloudinaryService;
         }
 
         // POST: api/Auth/register
@@ -51,7 +54,8 @@ namespace pinklet.Controllers
                 Role = "User",
                 Availability = "not-verified",
                 EmailVerificationToken = Guid.NewGuid().ToString(),
-                TokenGeneratedAt = DateTime.UtcNow
+                TokenGeneratedAt = DateTime.UtcNow,
+                ProfileImageLink = null
             };
 
             _context.Users.Add(user);
@@ -72,7 +76,8 @@ namespace pinklet.Controllers
             {
 
             }
-            else {
+            else
+            {
                 var user = new User
                 {
                     FirstName = request.Name,
@@ -91,8 +96,8 @@ namespace pinklet.Controllers
             }
 
 
-                var claims = new[]
-                {
+            var claims = new[]
+            {
                 new Claim(JwtRegisteredClaimNames.Sub, request.Sub),
                 new Claim(JwtRegisteredClaimNames.Email, request.Email),
                 new Claim("name", request.Name)
@@ -136,7 +141,7 @@ namespace pinklet.Controllers
             user.TokenGeneratedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
-            
+
             await SendOTPEmail(user);
 
             return Ok("OTP sent to your email. Please check your inbox.");
@@ -164,8 +169,8 @@ namespace pinklet.Controllers
             if (user == null)
                 return BadRequest("Invalid email.");
             user.Password = HashPassword(request.Password);
-            user.EmailVerificationToken = null; 
-            user.TokenGeneratedAt = null; 
+            user.EmailVerificationToken = null;
+            user.TokenGeneratedAt = null;
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
             return Ok("Password reset successfully.");
@@ -184,13 +189,17 @@ namespace pinklet.Controllers
             {
                 token = GenerateJwtToken(user),
                 email = user.Email,
-                name = user.FirstName
+                name = user.FirstName,
+                lname = user.LastName,
+                id = user.Id,
+                proPic = user.ProfileImageLink,
+                role = user.Role,
             });
         }
 
         // GET: api/Auth/user/{id}
         // API for getting user details by ID, requires JWT authentication
-        [HttpGet("user/{id}")]
+        [HttpGet("user/{id:int}")]
         [Authorize] // Requires valid JWT
         public async Task<IActionResult> GetUserDetails(int id)
         {
@@ -212,7 +221,10 @@ namespace pinklet.Controllers
             {
                 user.Id,
                 user.FirstName,
-                user.Email
+                user.LastName,
+                user.Email,
+                user.PhoneNumber,
+                user.ProfileImageLink
             });
         }
 
@@ -222,7 +234,7 @@ namespace pinklet.Controllers
         public async Task<IActionResult> VerifyEmail([FromQuery] string token)
         {
             if (string.IsNullOrEmpty(token))
-                return BadRequest("Token is missing.");
+                return BadRequest("Token is Missing.");
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.EmailVerificationToken == token);
 
@@ -241,6 +253,48 @@ namespace pinklet.Controllers
             await _context.SaveChangesAsync();
 
             return Ok("Email verified susccessfully");
+        }
+
+        // PUT: api/Auth/user/update-profile
+        [HttpPut("update-profile")]
+        [Authorize]
+        [EnableCors("AllowFrontend")]
+        public async Task<IActionResult> UpdateProfileWithImage([FromForm] UserProfileUpdateRequest request)
+        {
+            try
+            {
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim))
+                    return Unauthorized("Invalid token.");
+
+                var user = await _context.Users.FindAsync(int.Parse(userIdClaim));
+                if (user == null)
+                    return NotFound("User not found.");
+
+                // Upload profile image only if it's provided
+                if (request.ProfileImage != null)
+                {
+                    var imageUrl = await _cloudinaryService.UploadImageAsync(request.ProfileImage);
+                    if (string.IsNullOrEmpty(imageUrl))
+                        return StatusCode(500, "Image upload failed.");
+                    user.ProfileImageLink = imageUrl;
+                }
+
+                // Update phone number only if provided
+                if (!string.IsNullOrWhiteSpace(request.PhoneNumber))
+                {
+                    user.PhoneNumber = request.PhoneNumber;
+                }
+
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync();
+
+                return Ok("Profile updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while updating the profile: " + ex.Message);
+            }
         }
 
 
@@ -303,7 +357,7 @@ namespace pinklet.Controllers
         // Send OTP email for account recovery
         private async Task SendOTPEmail(User user)
         {
-            
+
             var mailMessage = new MailMessage
             {
                 From = new MailAddress(_emailSettings.SenderEmail),
@@ -358,12 +412,23 @@ namespace pinklet.Controllers
     {
         public string Email { get; set; }
         public string Name { get; set; }
-        public string Sub { get; set; } 
+        public string Sub { get; set; }
         public string Picture { get; set; }
     }
 
     public class EmailRequest
     {
         public string Email { get; set; }
+    }
+    public class UpdateUserRequest
+    {
+        public string PhoneNumber { get; set; }
+        public string ProfileImageLink { get; set; }
+    }
+    public class UserProfileUpdateRequest
+    {
+        public string? PhoneNumber { get; set; }
+        public IFormFile? ProfileImage { get; set; }
+
     }
 }

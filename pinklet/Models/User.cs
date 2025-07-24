@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace pinklet.Models
 {
@@ -27,5 +28,11 @@ namespace pinklet.Models
 
         public string? EmailVerificationToken { get; set; }
         public DateTime? TokenGeneratedAt { get; set; }
+        public string? ProfileImageLink { get; set; }
+        public ICollection<Item> Items { get; set; } = new List<Item>();
+
+        public ICollection<Package> Packages { get; set; } = new List<Package>();
+
+        public ICollection<Cart> Carts { get; set; } = new List<Cart>();
     }
 }

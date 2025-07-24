@@ -7,7 +7,7 @@ namespace pinklet.Models
     {
         [Key]
         public int Id { get; set; }
-
+        public string? CakeCode { get; set; }
         public int UserId { get; set; }
 
         public string Occation { get; set; }
@@ -22,6 +22,16 @@ namespace pinklet.Models
 
         public string IcingType { get; set; }
 
+        public string? Toppers { get; set; }
+        
+        public bool? IsReqested { get; set; } = false;
+
+        public double? RequestedPrice { get; set; } = null;
+
+        public DateTime? RequestedDate { get; set; }
+
         public ICollection<CakeLayerModel> CakeLayers { get; set; } = new List<CakeLayerModel>();
+
+        public ICollection<Package> Packages { get; set; } = new List<Package>();
     }
 }
