@@ -52,10 +52,15 @@ namespace pinklet.Controllers
                     UserId = dto.UserId,
                     CakeId = dto.CakeId,
                     ThreeDCakeId = dto.ThreeDCakeId,
+                    PackageName = dto.PackageName,
+                    TotalAmount = dto.TotalAmount,
+                    TotalItems = dto.TotalItems,
+                    TotalCategories = dto.TotalCategories,
                     ItemPackages = dto.Items.Select(i => new ItemPackage
                     {
                         ItemId = i.ItemId,
-                        Quantity = i.Quantity
+                        Quantity = i.Quantity,
+                        Variant = i.Variant
                     }).ToList()
                 };
 
@@ -99,6 +104,10 @@ namespace pinklet.Controllers
                     Id = package.Id,
                     PackageCode = package.PackageCode,
                     UserId = package.UserId,
+                    PackageName = package.PackageName,
+                    TotalAmount = package.TotalAmount,
+                    TotalItems = package.TotalItems,
+                    TotalCategories = package.TotalCategories,
                     Cake = package.CakeId.HasValue ? new Cake
                     {
                         Id = package.Cake.Id,
@@ -122,6 +131,7 @@ namespace pinklet.Controllers
                             ItemCode = ip.Item.ItemCode,
                             ItemName = ip.Item.ItemName,
                             ItemPrice = ip.Item.ItemPrice,
+                            ItemVariant = ip.Item.ItemVariant,
                             ItemCategory = ip.Item.ItemCategory,
                             Quantity = ip.Quantity
                         }).ToList()
@@ -148,7 +158,10 @@ namespace pinklet.Controllers
 
             public int? CakeId { get; set; }
             public int? ThreeDCakeId { get; set; }
-
+            public string PackageName { get; set; }
+            public double TotalAmount { get; set; }
+            public int TotalItems { get; set; }
+            public int TotalCategories { get; set; }
             [Required]
             [MinLength(1, ErrorMessage = "At least one item is required.")]
             public List<ItemWithQuantityDTO> Items { get; set; }
@@ -161,6 +174,7 @@ namespace pinklet.Controllers
 
             [Range(1, int.MaxValue, ErrorMessage = "Quantity must be at least 1.")]
             public int Quantity { get; set; }
+            public int? Variant { get; set; }
         }
 
         public class PackageDetailsDTO
@@ -171,6 +185,11 @@ namespace pinklet.Controllers
             public List<ItemDTO> Items { get; set; }
             public Cake? Cake { get; set; }
             public _3DCakeModel? ThreeDCake { get; set; }
+            public string PackageName { get; set; }
+            public double TotalAmount { get; set; }
+            public int TotalItems { get; set; }
+            public int TotalCategories { get; set; }
+
         }
 
         public class ItemDTO
@@ -178,7 +197,8 @@ namespace pinklet.Controllers
             public int Id { get; set; }
             public string ItemCode { get; set; }
             public string ItemName { get; set; }
-            public double ItemPrice { get; set; }
+            public double? ItemPrice { get; set; }
+            public string? ItemVariant { get; set; }
             public string ItemCategory { get; set; }
             public int Quantity { get; set; }
         }

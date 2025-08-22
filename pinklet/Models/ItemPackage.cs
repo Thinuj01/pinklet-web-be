@@ -10,6 +10,7 @@ namespace pinklet.Models
         public Package Package { get; set; }
         
         public int Quantity { get; set; } = 1;
+        public int? Variant { get; set; }
 
     }
 }

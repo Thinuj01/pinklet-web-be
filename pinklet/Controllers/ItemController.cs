@@ -46,8 +46,10 @@ namespace pinklet.Controllers
                     ItemSubCategory = itemDto.ItemSubCategory,
                     ItemDescription = itemDto.ItemDescription,
                     ItemStock = itemDto.ItemStock,
+                    ItemPrice = itemDto.ItemPrice,
                     ItemTags = itemDto.ItemTags,
                     VendorId = itemDto.VendorId,
+                    ItemVariant= itemDto.ItemVariant,
                     ItemRating = 0,
                     ItemImageLink1 = uploadedUrls.ElementAtOrDefault(0),
                     ItemImageLink2 = uploadedUrls.ElementAtOrDefault(1),
@@ -90,6 +92,7 @@ namespace pinklet.Controllers
                     ItemTags = i.ItemTags,
                     ItemStock = i.ItemStock,
                     ItemPrice = i.ItemPrice,
+                    ItemVariant = i.ItemVariant,
                     VendorId = i.VendorId,
                     VendorName = i.Vendor.FirstName + " " + i.Vendor.LastName,
                     VendorEmail = i.Vendor.Email,
@@ -118,8 +121,9 @@ namespace pinklet.Controllers
             public string ItemCategory { get; set; }
             public string ItemSubCategory { get; set; }
             public string ItemTags { get; set; }
-            public int ItemStock { get; set; }
-            public double ItemPrice { get; set; }
+            public int? ItemStock { get; set; }
+            public double? ItemPrice { get; set; }
+            public string? ItemVariant { get; set; }
             public int VendorId { get; set; }
             public string VendorName { get; set; }
             public string VendorEmail { get; set; }
@@ -138,7 +142,9 @@ namespace pinklet.Controllers
             public string ItemSubCategory { get; set; }
             public string ItemDescription { get; set; }
             public string ItemTags { get; set; }
-            public int ItemStock { get; set; }
+            public double? ItemPrice { get; set; }
+            public int? ItemStock { get; set; }
+            public string? ItemVariant { get; set; }
             public int VendorId { get; set; }
             public List<IFormFile?> ItemImages { get; set; } = new();
         }

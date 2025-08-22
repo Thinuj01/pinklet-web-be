@@ -25,5 +25,9 @@ namespace pinklet.Models
         public _3DCakeModel ThreeDCake { get; set; }
 
         public Cart Cart { get; set; }
+        public string PackageName { get; set; }
+        public double TotalAmount { get; set; }
+        public int TotalItems { get; set; }
+        public int TotalCategories { get; set; }
     }
 }
