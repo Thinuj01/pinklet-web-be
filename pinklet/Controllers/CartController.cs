@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using pinklet.data;
 using pinklet.Models;
+using pinklet.Dto;
 using static pinklet.Controllers.PackageController;
 
 namespace pinklet.Controllers
@@ -74,7 +75,7 @@ namespace pinklet.Controllers
                         .ThenInclude(ip => ip.Item)
                 .Include(c => c.Package)
                     .ThenInclude(p => p.Cake)
-                .Where(c => c.UserId == userId)
+                .Where(c => c.UserId == userId && !c.IsCheckedOut)
                 .ToListAsync();
 
             if (carts == null || carts.Count == 0)
@@ -86,6 +87,7 @@ namespace pinklet.Controllers
             {
                 Id = cart.Id,
                 UserId = cart.UserId,
+                IsCheckedOut = cart.IsCheckedOut,
                 Package = cart.Package == null ? null : new PackageDto
                 {
                     Id = cart.Package.Id,
@@ -135,75 +137,6 @@ namespace pinklet.Controllers
             }).ToList();
 
             return Ok(result);
-        }
-
-
-
-
-        public class CartDto
-        {
-            public int UserId { get; set; }
-            public int PackageId { get; set; }
-        }
-        public class CartDetailsDto
-        {
-            public int Id { get; set; }
-            public int UserId { get; set; }
-            public PackageDto Package { get; set; }
-        }
-
-        public class PackageDto
-        {
-            public int Id { get; set; }
-            public string PackageName { get; set; }
-            public List<ItemPackageDto> ItemPackages { get; set; }
-            public double TotalAmount { get; set; }
-            public int TotalItems { get; set; }
-            public int TotalCategories { get; set; }
-            public CakeDto? Cake { get; set; }
-
-        }
-
-        public class CakeDto
-        {
-            public int Id { get; set; }
-            public string CakeCode { get; set; }
-            public string CakeName { get; set; }
-            public string CakeCategory { get; set; }
-            public string CakeTags { get; set; }
-            public double CakePrice { get; set; }
-            public int CakeRating { get; set; }
-            public string CakeDescription { get; set; }
-            public string? CakeImageLink1 { get; set; }
-            public string? CakeImageLink2 { get; set; }
-            public string? CakeImageLink3 { get; set; }
-            public string? CakeImageLink4 { get; set; }
-        } 
-
-        public class ItemPackageDto
-        {
-            public ItemDto Item { get; set; }
-            public int Quantity { get; set; }
-            public int? Variant { get; set; }
-        }
-
-        public class ItemDto
-        {
-            public int Id { get; set; }
-            public string ItemName { get; set; }
-            public string? ItemVariant { get; set; }
-            public string ItemCategory { get; set; }
-            public string ItemSubCategory { get; set; }
-            public int? ItemStock { get; set; }
-            public double? ItemPrice { get; set; }
-            public int ItemRating { get; set; }
-            public string ItemDescription { get; set; }
-            public string? ItemImageLink1 { get; set; }
-            public string? ItemImageLink2 { get; set; }
-            public string? ItemImageLink3 { get; set; }
-            public string? ItemImageLink4 { get; set; }
-            public string? ItemImageLink5 { get; set; }
-
         }
 
     }

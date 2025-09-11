@@ -184,6 +184,22 @@ namespace pinklet.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
             if (user == null || user.Password != HashPassword(request.Password))
                 return Unauthorized("Invalid username or password");
+            
+            if (user.Role == "Vendor")
+            {
+                var vendor = await _context.Vendors.FirstOrDefaultAsync(v => v.UserId == user.Id);
+                return Ok(new
+                {
+                    token = GenerateJwtToken(user),
+                    email = user.Email,
+                    name = user.FirstName,
+                    lname = user.LastName,
+                    id = user.Id,
+                    proPic = user.ProfileImageLink,
+                    role = user.Role,
+                    vendorId = vendor.Id
+                });
+            }
 
             return Ok(new
             {

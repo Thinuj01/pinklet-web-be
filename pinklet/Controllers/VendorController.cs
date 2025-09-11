@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using pinklet.data;
 using pinklet.Models;
+using System.Net;
+using System.Net.Mail;
 
 namespace pinklet.Controllers
 {
@@ -12,12 +15,14 @@ namespace pinklet.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration configuration;
         private readonly CloudinaryService _cloudinaryService;
+        private readonly EmailSettings _emailSettings;
 
-        public VendorController(ApplicationDbContext context, IConfiguration configuration, CloudinaryService cloudinaryService)
+        public VendorController(ApplicationDbContext context, IConfiguration configuration, CloudinaryService cloudinaryService, IOptions<EmailSettings> emailSettings)
         {
             _context = context;
             this.configuration = configuration;
             _cloudinaryService = cloudinaryService;
+            _emailSettings = emailSettings.Value;
         }
 
         [HttpPost("register")]
@@ -104,6 +109,103 @@ namespace pinklet.Controllers
             }
 
             return Ok(new { success = true, vendor });
+        }
+
+        [HttpGet("pending")]
+        public async Task<IActionResult> GetPendingVendors()
+        {
+            var vendors = await _context.Vendors
+                .Where(v => v.IsVerified == false)
+                .Select(v => new
+                {
+                    v.Id,
+                    v.UserId,
+                    v.ShopName,
+                    v.ShopDistrict,
+                    v.ShopCity,
+                    v.ShopDescription,
+                    v.FullName,
+                    v.IDNumber,
+                    v.ShopProfileImageLink,
+                    v.ShopCoverImageLink,
+                    v.IDImageLink1,
+                    v.IDImageLink2,
+                    v.IsVerified
+                })
+                .ToListAsync();
+
+            return Ok(new { success = true, vendors });
+        }
+
+        [HttpPost("approve/{vendorId}")]
+        public async Task<IActionResult> ApproveVendor(int vendorId)
+        {
+            var vendor = await _context.Vendors
+                .Include(v => v.User) // assuming Vendor has navigation property User
+                .FirstOrDefaultAsync(v => v.Id == vendorId);
+
+            if (vendor == null) return NotFound(new { success = false, message = "Vendor not found" });
+
+            vendor.IsVerified = true;
+            await _context.SaveChangesAsync();
+
+            // send approval email
+            var mailMessage = new MailMessage
+            {
+                From = new MailAddress(_emailSettings.SenderEmail),
+                Subject = "Vendor Account Approved",
+                Body = $"Dear {vendor.FullName},<br/> <p>Your vendor account <b>{vendor.ShopName}</b> has been approved. You can now start selling on Pinklet.</p>",
+                IsBodyHtml = true
+            };
+            mailMessage.To.Add(vendor.User.Email);
+
+            using var smtp = new SmtpClient(_emailSettings.SmtpServer, _emailSettings.Port)
+            {
+                Credentials = new NetworkCredential(_emailSettings.SenderEmail, _emailSettings.SenderPassword),
+                EnableSsl = true
+            };
+
+            await smtp.SendMailAsync(mailMessage);
+
+            return Ok(new { success = true, message = "Vendor approved successfully and email sent." });
+        }
+
+        [HttpPost("reject/{vendorId}")]
+        public async Task<IActionResult> RejectVendor(int vendorId, [FromBody] RejectDto rejectDto)
+        {
+            var vendor = await _context.Vendors
+                .Include(v => v.User)
+                .FirstOrDefaultAsync(v => v.Id == vendorId);
+
+            if (vendor == null) return NotFound(new { success = false, message = "Vendor not found" });
+
+            _context.Vendors.Remove(vendor);
+            await _context.SaveChangesAsync();
+
+            // send rejection email
+            var mailMessage = new MailMessage
+            {
+                From = new MailAddress(_emailSettings.SenderEmail),
+                Subject = "Vendor Account Rejected",
+                Body = $"Dear {vendor.FullName},<br/> <p>We regret to inform you that your vendor request for <b>{vendor.ShopName}</b> was rejected.</p><p><b>Reason:</b> {rejectDto.Reason}</p><b/><p>Register as vendor again to get approval</p>",
+                IsBodyHtml = true
+            };
+            mailMessage.To.Add(vendor.User.Email);
+
+            using var smtp = new SmtpClient(_emailSettings.SmtpServer, _emailSettings.Port)
+            {
+                Credentials = new NetworkCredential(_emailSettings.SenderEmail, _emailSettings.SenderPassword),
+                EnableSsl = true
+            };
+
+            await smtp.SendMailAsync(mailMessage);
+
+            return Ok(new { success = true, message = "Vendor rejected, removed, and email sent." });
+        }
+
+        public class RejectDto
+        {
+            public string Reason { get; set; }
         }
 
 

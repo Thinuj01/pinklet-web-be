@@ -29,5 +29,6 @@ namespace pinklet.Models
         public double TotalAmount { get; set; }
         public int TotalItems { get; set; }
         public int TotalCategories { get; set; }
+
     }
 }

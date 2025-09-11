@@ -1,8 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 namespace pinklet.Models
 {
     public class ItemPackage
     {
+        [Key]
+        public int Id { get; set; }
         public int ItemId { get; set; }
         public Item Item { get; set; }
 
@@ -11,6 +14,6 @@ namespace pinklet.Models
         
         public int Quantity { get; set; } = 1;
         public int? Variant { get; set; }
-
+        
     }
 }

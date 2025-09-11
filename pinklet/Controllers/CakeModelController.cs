@@ -179,6 +179,130 @@ namespace pinklet.Controllers
 
             return Ok(new { message = "Cake updated successfully.", cakeId = existingCake.Id });
         }
+
+        [HttpPut("price/{id}")]
+        public async Task<IActionResult> AddCakePrice(int id, [FromBody] double price)
+        {
+            var cake = await _context.Cakes3dModel.FirstOrDefaultAsync(c => c.Id == id);
+            if (cake == null) return NotFound("Cake not found.");
+
+            cake.RequestedPrice = price;
+            cake.IsReqested = false; // mark requested
+            cake.RequestedDate = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Price added successfully", cakeId = cake.Id });
+        }
+        // GET: api/CakeModel/requested
+        [HttpGet("requested")]
+        [Authorize]
+        public async Task<IActionResult> GetAllRequestedCakes()
+        {
+            var requestedCakes = await _context.Cakes3dModel
+                .Include(c => c.CakeLayers)
+                .Where(c => c.IsReqested == true)
+                .ToListAsync();
+
+            if (requestedCakes == null || requestedCakes.Count == 0)
+                return NotFound("No requested cakes found.");
+
+            // Remove circular reference
+            foreach (var cake in requestedCakes)
+            {
+                foreach (var layer in cake.CakeLayers)
+                {
+                    layer.Cake = null;
+                }
+            }
+
+            // Return only necessary info
+            var result = requestedCakes.Select(c => new
+            {
+                c.Id,
+                c.CakeCode,
+                c.Occation,
+                c.BaseShape,
+                c.BaseShapeSize,
+                c.NoLayers,
+                c.LayerShape,
+                c.IcingType,
+                c.Toppers,
+                c.IsReqested,
+                c.RequestedPrice,
+                c.RequestedDate,
+                Layers = c.CakeLayers.Select(l => new
+                {
+                    l.LayerNo,
+                    l.LayerFlavor,
+                    l.LayerHeight,
+                    l.LayerColorizeType,
+                    l.LayerSoidColor,
+                    l.LayerGradientColor1,
+                    l.LayerGradientColor2,
+                    l.LayerGradientDirection,
+                    l.LayerPatternType,
+                    l.LayerPatternColor,
+                    l.LayerPatternBGColor
+                })
+            });
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GetAllCakes()
+        {
+            var requestedCakes = await _context.Cakes3dModel
+                .Include(c => c.CakeLayers) 
+                .ToListAsync();
+
+            if (requestedCakes == null || requestedCakes.Count == 0)
+                return NotFound("No requested cakes found.");
+
+            // Remove circular reference
+            foreach (var cake in requestedCakes)
+            {
+                foreach (var layer in cake.CakeLayers)
+                {
+                    layer.Cake = null;
+                }
+            }
+
+            // Return only necessary info
+            var result = requestedCakes.Select(c => new
+            {
+                c.Id,
+                c.CakeCode,
+                c.Occation,
+                c.BaseShape,
+                c.BaseShapeSize,
+                c.NoLayers,
+                c.LayerShape,
+                c.IcingType,
+                c.Toppers,
+                c.IsReqested,
+                c.RequestedPrice,
+                c.RequestedDate,
+                Layers = c.CakeLayers.Select(l => new
+                {
+                    l.LayerNo,
+                    l.LayerFlavor,
+                    l.LayerHeight,
+                    l.LayerColorizeType,
+                    l.LayerSoidColor,
+                    l.LayerGradientColor1,
+                    l.LayerGradientColor2,
+                    l.LayerGradientDirection,
+                    l.LayerPatternType,
+                    l.LayerPatternColor,
+                    l.LayerPatternBGColor
+                })
+            });
+
+            return Ok(result);
+        }
+
         private string GenerateUniqueCakeCode()
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -191,6 +315,7 @@ namespace pinklet.Controllers
 
             return letters + numbers;
         }
+
 
 
 

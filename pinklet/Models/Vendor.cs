@@ -21,5 +21,6 @@ namespace pinklet.Models
         public string IDImageLink1 { get; set; }
         public string IDImageLink2 { get; set; }
         public Boolean? IsVerified { get; set; } = false;
+        public ICollection<Item> Items { get; set; } = new List<Item>();
     }
 }

@@ -202,5 +202,6 @@ namespace pinklet.Controllers
             public string ItemCategory { get; set; }
             public int Quantity { get; set; }
         }
+
     }
 }

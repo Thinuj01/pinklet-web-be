@@ -10,7 +10,7 @@ namespace pinklet.Models
         public int Id { get; set; }
         public int VendorId { get; set; }
         [ForeignKey("VendorId")]
-        public User? Vendor { get; set; }
+        public Vendor? Vendor { get; set; }
         public string ItemCode { get; set; }
         public string ItemName { get; set; }
         public string ItemCategory { get; set; }
@@ -26,6 +26,7 @@ namespace pinklet.Models
         public string? ItemImageLink3 { get; set; }
         public string? ItemImageLink4 { get; set; }
         public string? ItemImageLink5 { get; set; }
+        public Boolean? IsVerified { get; set; } = false;
 
         public ICollection<ItemPackage> ItemPackages { get; set; } = new List<ItemPackage>();
     }

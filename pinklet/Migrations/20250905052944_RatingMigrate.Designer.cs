@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using pinklet.data;
@@ -11,9 +12,11 @@ using pinklet.data;
 namespace pinklet.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250905052944_RatingMigrate")]
+    partial class RatingMigrate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -172,9 +175,6 @@ namespace pinklet.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<bool?>("IsVerified")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("ItemCategory")
                         .IsRequired()
                         .HasColumnType("text");
@@ -238,12 +238,6 @@ namespace pinklet.Migrations
 
             modelBuilder.Entity("pinklet.Models.ItemPackage", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
                     b.Property<int>("ItemId")
                         .HasColumnType("integer");
 
@@ -256,9 +250,7 @@ namespace pinklet.Migrations
                     b.Property<int?>("Variant")
                         .HasColumnType("integer");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("ItemId");
+                    b.HasKey("ItemId", "PackageId");
 
                     b.HasIndex("PackageId");
 
@@ -339,38 +331,6 @@ namespace pinklet.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Orders");
-                });
-
-            modelBuilder.Entity("pinklet.Models.OrderItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ItemPackageId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("OrderId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Progress")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("VendorId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ItemPackageId");
-
-                    b.HasIndex("OrderId");
-
-                    b.HasIndex("VendorId");
-
-                    b.ToTable("OrderItems");
                 });
 
             modelBuilder.Entity("pinklet.Models.Package", b =>
@@ -713,33 +673,6 @@ namespace pinklet.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("pinklet.Models.OrderItem", b =>
-                {
-                    b.HasOne("pinklet.Models.ItemPackage", "ItemPackage")
-                        .WithMany()
-                        .HasForeignKey("ItemPackageId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("pinklet.Models.Order", "Order")
-                        .WithMany("OrderItems")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("pinklet.Models.Vendor", "Vendor")
-                        .WithMany()
-                        .HasForeignKey("VendorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("ItemPackage");
-
-                    b.Navigation("Order");
-
-                    b.Navigation("Vendor");
-                });
-
             modelBuilder.Entity("pinklet.Models.Package", b =>
                 {
                     b.HasOne("pinklet.Models.Cake", "Cake")
@@ -813,11 +746,6 @@ namespace pinklet.Migrations
             modelBuilder.Entity("pinklet.Models.Item", b =>
                 {
                     b.Navigation("ItemPackages");
-                });
-
-            modelBuilder.Entity("pinklet.Models.Order", b =>
-                {
-                    b.Navigation("OrderItems");
                 });
 
             modelBuilder.Entity("pinklet.Models.Package", b =>

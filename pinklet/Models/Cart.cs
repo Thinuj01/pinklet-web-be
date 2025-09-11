@@ -15,5 +15,6 @@ namespace pinklet.Models
         public Package Package { get; set; }
 
         public Boolean IsCheckedOut { get; set; } = false;
+        public Order Order { get; set; }
     }
 }
