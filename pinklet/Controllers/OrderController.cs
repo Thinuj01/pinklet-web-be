@@ -318,7 +318,7 @@ namespace pinklet.Controllers
             return Ok(result);
         }
 
-        [HttpGet("vendor/{vendorId}/completed")]
+        [HttpGet("vendor/{vendorId}/completed")] 
         public async Task<IActionResult> GetVendorCompletedOrders(int vendorId)
         {
             var completedOrders = await _context.OrderItems

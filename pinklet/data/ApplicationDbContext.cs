@@ -21,6 +21,7 @@ namespace pinklet.data
         public DbSet<Payment> Payment { get; set; }
         public DbSet<Rating> Rating { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<CustomCake> CustomCakes { get; set; }
 
         //protected override void OnModelCreating(ModelBuilder modelBuilder)
         //{
@@ -201,6 +202,13 @@ namespace pinklet.data
                 .HasOne(oi => oi.Vendor)
                 .WithMany()   // or add ICollection<OrderItem> OrderItems in Vendor.cs
                 .HasForeignKey(oi => oi.VendorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ✅ CustomCake → User (Many-to-One)
+            modelBuilder.Entity<CustomCake>()
+                .HasOne(cc => cc.User)
+                .WithMany(u => u.CustomCakes)
+                .HasForeignKey(cc => cc.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
 

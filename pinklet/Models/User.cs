@@ -36,5 +36,7 @@ namespace pinklet.Models
         public ICollection<Cart> Carts { get; set; } = new List<Cart>();
 
         public ICollection<Order> Orders { get; set; } = new List<Order>();
+
+        public ICollection<CustomCake> CustomCakes { get; set; } = new List<CustomCake>();
     }
 }
