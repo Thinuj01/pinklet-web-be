@@ -75,6 +75,10 @@ namespace pinklet.Controllers
                         .ThenInclude(ip => ip.Item)
                 .Include(c => c.Package)
                     .ThenInclude(p => p.Cake)
+                .Include(c => c.Package)
+                    .ThenInclude(p => p.ThreeDCake)
+                .Include(c => c.Package)
+                    .ThenInclude(p => p.CustomCake)
                 .Where(c => c.UserId == userId && !c.IsCheckedOut)
                 .ToListAsync();
 
@@ -116,7 +120,7 @@ namespace pinklet.Controllers
                             ItemImageLink4 = ip.Item.ItemImageLink4,
                             ItemImageLink5 = ip.Item.ItemImageLink5
                         },
-                        
+
                     }).ToList(),
                     Cake = cart.Package.Cake == null ? null : new CakeDto
                     {
@@ -132,7 +136,26 @@ namespace pinklet.Controllers
                         CakeImageLink2 = cart.Package.Cake.CakeImageLink2,
                         CakeImageLink3 = cart.Package.Cake.CakeImageLink3,
                         CakeImageLink4 = cart.Package.Cake.CakeImageLink4,
-                    }
+                    },
+                    ThreeDCake = cart.Package.ThreeDCake == null ? null : new ThreeDCakeDto
+                    {
+                        Id = cart.Package.ThreeDCake.Id,
+                        CakeCode = cart.Package.ThreeDCake.CakeCode,
+                        RequestedPrice = cart.Package.ThreeDCake.RequestedPrice
+                    },
+                    CustomCake = cart.Package.CustomCake == null ? null : new CustomCakeDto
+                    {
+                        Id = cart.Package.CustomCake.Id,
+                        CakeCode = cart.Package.CustomCake.CakeCode,
+                        CakeWeight = cart.Package.CustomCake.CakeWeight,
+                        CakePrice = cart.Package.CustomCake.CakePrice,
+                        CakeImageLink1 = cart.Package.CustomCake.CakeImageLink1,
+                        CakeImageLink2 = cart.Package.CustomCake.CakeImageLink2,
+                        CakeImageLink3 = cart.Package.CustomCake.CakeImageLink3,
+                        CakeImageLink4 = cart.Package.CustomCake.CakeImageLink4,
+                        CakeImageLink5 = cart.Package.CustomCake.CakeImageLink5
+                    },
+
                 }
             }).ToList();
 

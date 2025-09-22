@@ -58,7 +58,8 @@ namespace pinklet.Controllers
                     DeliveryNote = dto.DeliveryNote,
                     OrderNote = dto.OrderNote,
                     ClientEmailAddress = dto.ClientEmailAddress,
-                    ClientFullName = dto.ClientFullName
+                    ClientFullName = dto.ClientFullName,
+                    RequiredDate = dto.RequiredDate
                 };
 
                 _context.Orders.Add(order);
@@ -133,6 +134,15 @@ namespace pinklet.Controllers
                     .Include(o => o.OrderItems)
                         .ThenInclude(oi => oi.ItemPackage)
                             .ThenInclude(ip => ip.Item)
+                    .Include(o => o.Cart)
+                        .ThenInclude(c => c.Package)
+                            .ThenInclude(p => p.Cake)        
+                    .Include(o => o.Cart)
+                        .ThenInclude(c => c.Package)
+                            .ThenInclude(p => p.ThreeDCake)   
+                    .Include(o => o.Cart)
+                        .ThenInclude(c => c.Package)
+                            .ThenInclude(p => p.CustomCake)  
                     .Include(o => o.OrderItems)
                         .ThenInclude(oi => oi.Vendor)
                     .Where(o => o.UserId == int.Parse(tokenUserId))
@@ -150,13 +160,61 @@ namespace pinklet.Controllers
                     order.ClientFullName,
                     order.Progress,
                     order.OrderedDate,
+                    order.District,
+                    order.PostalCode,
+                    order.RecipientName,
+                    order.RecipientPhoneNumber,
+                    order.ClientPhoneNumber,
+                    order.RequiredDate,
                     OrderItems = order.OrderItems.Select(oi => new
                     {
                         oi.Id,
                         oi.Progress,
+                        oi.ShippedDate,
+                        oi.CollectedDate,
                         Vendor = new { oi.Vendor.Id, oi.Vendor.ShopName },
-                        Item = new { oi.ItemPackage.Item.ItemName, oi.ItemPackage.Quantity }
-                    })
+                        Item = new { 
+                            oi.ItemPackage.Item.ItemName, 
+                            oi.ItemPackage.Quantity,
+                            oi.ItemPackage.Item.ItemCategory, 
+                            oi.ItemPackage.Item.ItemSubCategory, 
+                            oi.ItemPackage.Item.ItemPrice, 
+                            oi.ItemPackage.Item.ItemVariant,
+                            oi.ItemPackage.Item.ItemImageLink1,
+                            oi.ItemPackage.Item.ItemImageLink2,
+                            oi.ItemPackage.Item.ItemImageLink3,
+                            oi.ItemPackage.Item.ItemImageLink4,
+                            oi.ItemPackage.Item.ItemImageLink5,
+                           
+                        }
+                    }),
+                    Package = order.Cart?.Package == null ? null : new
+                    {
+                        order.Cart.Package.Id,
+                        order.Cart.Package.PackageName,
+                        Cake = order.Cart.Package.Cake == null ? null : new
+                        {
+                            order.Cart.Package.Cake.Id,
+                            order.Cart.Package.Cake.CakeCode,
+                            order.Cart.Package.Cake.CakePrice,
+                            order.Cart.Package.Cake.CakeImageLink1
+                        },
+                        ThreeDCake = order.Cart.Package.ThreeDCake == null ? null : new
+                        {
+                            order.Cart.Package.ThreeDCake.Id,
+                            order.Cart.Package.ThreeDCake.CakeCode,
+                            order.Cart.Package.ThreeDCake.RequestedPrice
+                        },
+                        CustomCake = order.Cart.Package.CustomCake == null ? null : new
+                        {
+                            order.Cart.Package.CustomCake.Id,
+                            order.Cart.Package.CustomCake.CakeCode,
+                            order.Cart.Package.CustomCake.CakePrice,
+                            order.Cart.Package.CustomCake.CakeWeight,
+                            order.Cart.Package.CustomCake.CakeImageLink1,
+
+                        }
+                    }
                 });
 
                 return Ok(result);
@@ -167,6 +225,7 @@ namespace pinklet.Controllers
                 return StatusCode(500, $"Internal Server Error: {inner}");
             }
         }
+
 
         [HttpGet("vendor/{vendorId}")]
         [Authorize]
@@ -190,7 +249,8 @@ namespace pinklet.Controllers
                 {
                     OrderItemId = oi.Id,
                     Progress = oi.Progress,
-
+                    OrderShippedDate = oi.ShippedDate,
+                    OrderCollectedDate = oi.CollectedDate,
                     // Parent Order Info
                     Order = new
                     {
@@ -200,7 +260,8 @@ namespace pinklet.Controllers
                         oi.Order.ClientFullName,
                         oi.Order.Address,
                         oi.Order.District,
-                        oi.Order.PostalCode
+                        oi.Order.PostalCode,
+                        oi.Order.RequiredDate
                     },
 
                     // ItemPackage Info
@@ -249,7 +310,7 @@ namespace pinklet.Controllers
 
             // Example: update status
             orderItem.Progress = "Shipped";
-            //orderItem.ShippedDate = DateTime.UtcNow; // if you have a field
+            orderItem.ShippedDate = DateTime.UtcNow; // if you have a field
 
             await _context.SaveChangesAsync();
 
@@ -276,7 +337,8 @@ namespace pinklet.Controllers
             {
                 OrderItemId = oi.Id,
                 Progress = oi.Progress,
-
+                OrderShippedDate = oi.ShippedDate,
+                OrderCollectedDate = oi.CollectedDate,
                 // Parent Order Info
                 Order = new
                 {
@@ -286,7 +348,8 @@ namespace pinklet.Controllers
                     oi.Order.ClientFullName,
                     oi.Order.Address,
                     oi.Order.District,
-                    oi.Order.PostalCode
+                    oi.Order.PostalCode,
+                    oi.Order.RequiredDate
                 },
 
                 // ItemPackage Info
@@ -338,6 +401,8 @@ namespace pinklet.Controllers
             {
                 OrderItemId = oi.Id,
                 Progress = oi.Progress,
+                OrderShippedDate = oi.ShippedDate,
+                OrderCollectedDate = oi.CollectedDate,
 
                 // Parent Order Info
                 Order = new
@@ -348,7 +413,8 @@ namespace pinklet.Controllers
                     oi.Order.ClientFullName,
                     oi.Order.Address,
                     oi.Order.District,
-                    oi.Order.PostalCode
+                    oi.Order.PostalCode,
+                    oi.Order.RequiredDate
                 },
 
                 // ItemPackage Info
@@ -379,6 +445,136 @@ namespace pinklet.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet("admin/all")]
+        [Authorize] // ✅ Only admins
+        public async Task<IActionResult> GetAllOrders()
+        {
+            try
+            {
+                var orders = await _context.Orders
+                    .Include(o => o.OrderItems)
+                        .ThenInclude(oi => oi.ItemPackage)
+                            .ThenInclude(ip => ip.Item)
+                    .Include(o => o.Cart)
+                        .ThenInclude(c => c.Package)
+                            .ThenInclude(p => p.Cake)
+                    .Include(o => o.Cart)
+                        .ThenInclude(c => c.Package)
+                            .ThenInclude(p => p.ThreeDCake)
+                    .Include(o => o.Cart)
+                        .ThenInclude(c => c.Package)
+                            .ThenInclude(p => p.CustomCake)
+                    .Include(o => o.OrderItems)
+                        .ThenInclude(oi => oi.Vendor)
+                    .OrderByDescending(o => o.OrderedDate)
+                    .ToListAsync();
+
+                var result = orders.Select(order => new
+                {
+                    order.Id,
+                    order.OrderId,
+                    order.TotalAmount,
+                    order.Address,
+                    order.ClientFullName,
+                    order.Progress,
+                    order.OrderedDate,
+                    order.RequiredDate,
+                    order.District,
+                    order.PostalCode,
+                    order.RecipientName,
+                    order.RecipientPhoneNumber,
+                    order.ClientPhoneNumber,
+                    OrderItems = order.OrderItems.Select(oi => new
+                    {
+                        oi.Id,
+                        oi.Progress,
+                        oi.ShippedDate,
+                        oi.CollectedDate,
+                        Vendor = new { oi.Vendor.Id, oi.Vendor.ShopName },
+                        Item = new
+                        {
+                            oi.ItemPackage.Item.ItemName,
+                            oi.ItemPackage.Quantity,
+                            oi.ItemPackage.Item.ItemCategory,
+                            oi.ItemPackage.Item.ItemSubCategory,
+                            oi.ItemPackage.Item.ItemPrice,
+                            oi.ItemPackage.Item.ItemVariant,
+                            oi.ItemPackage.Item.ItemImageLink1
+                        }
+                    }),
+                    Package = order.Cart?.Package == null ? null : new
+                    {
+                        order.Cart.Package.Id,
+                        order.Cart.Package.PackageName,
+                        Cake = order.Cart.Package.Cake == null ? null : new
+                        {
+                            order.Cart.Package.Cake.Id,
+                            order.Cart.Package.Cake.CakeCode,
+                            order.Cart.Package.Cake.CakePrice,
+                            order.Cart.Package.Cake.CakeImageLink1
+                        },
+                        ThreeDCake = order.Cart.Package.ThreeDCake == null ? null : new
+                        {
+                            order.Cart.Package.ThreeDCake.Id,
+                            order.Cart.Package.ThreeDCake.CakeCode,
+                            order.Cart.Package.ThreeDCake.RequestedPrice
+                        },
+                        CustomCake = order.Cart.Package.CustomCake == null ? null : new
+                        {
+                            order.Cart.Package.CustomCake.Id,
+                            order.Cart.Package.CustomCake.CakeCode,
+                            order.Cart.Package.CustomCake.CakePrice,
+                            order.Cart.Package.CustomCake.CakeWeight,
+                            order.Cart.Package.CustomCake.CakeImageLink1,
+                        }
+                    }
+                });
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal Server Error: {ex.Message}");
+            }
+        }
+
+        [HttpPost("admin/delivered/{orderId}")]
+        [Authorize]
+        public async Task<IActionResult> MarkPackageDelivered(int orderId)
+        {
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
+            if (order == null)
+                return NotFound("Order not found");
+
+            order.Progress = "Delivered";
+            order.DeliveredDate = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Order marked as delivered." });
+        }
+
+        [HttpPost("collect/{orderItemId}")]
+        [Authorize]
+        public async Task<IActionResult> MarkAsCollected(int orderItemId)
+        {
+            var orderItem = await _context.OrderItems
+                .FirstOrDefaultAsync(oi => oi.Id == orderItemId);
+
+            if (orderItem == null)
+                return NotFound(new { message = "Order item not found." });
+
+            if (orderItem.Progress != "Shipped")
+                return BadRequest(new { message = "Only shipped items can be collected." });
+
+            orderItem.Progress = "Collected";
+            orderItem.CollectedDate = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Order item marked as collected.", orderItemId });
+        }
+
 
 
     }

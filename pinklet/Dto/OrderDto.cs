@@ -37,6 +37,7 @@ namespace pinklet.Dto
         public string RecipientPhoneNumber { get; set; }
         public string Progress { get; set; }
         public DateTime OrderedDate { get; set; }
+        public DateTime RequiredDate { get; set; }
         public string District { get; set; }
         public string PostalCode { get; set; }
         public string? DeliveryNote { get; set; }
@@ -68,6 +69,9 @@ namespace pinklet.Dto
         public int TotalItems { get; set; }
         public int TotalCategories { get; set; }
         public CakeDto? Cake { get; set; }
+        public ThreeDCakeDto? ThreeDCake { get; set; }
+        public CustomCakeDto? CustomCake { get; set; }
+
 
     }
 
@@ -86,7 +90,24 @@ namespace pinklet.Dto
         public string? CakeImageLink3 { get; set; }
         public string? CakeImageLink4 { get; set; }
     }
-
+    public class ThreeDCakeDto
+    {
+        public int Id { get; set; }
+        public string CakeCode { get; set; }
+        public double? RequestedPrice { get; set; }
+    }
+    public class CustomCakeDto
+    {
+        public int Id { get; set; }
+        public string CakeCode { get; set; }
+        public string CakeWeight { get; set; }
+        public double? CakePrice { get; set; }
+        public string? CakeImageLink1 { get; set; }
+        public string? CakeImageLink2 { get; set; }
+        public string? CakeImageLink3 { get; set; }
+        public string? CakeImageLink4 { get; set; }
+        public string? CakeImageLink5 { get; set; }
+    }
     public class ItemPackageDto
     {
         public ItemDto Item { get; set; }

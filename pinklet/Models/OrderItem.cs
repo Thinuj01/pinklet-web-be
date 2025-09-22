@@ -24,5 +24,8 @@ namespace pinklet.Models
 
         // Track vendor-specific progress
         public string Progress { get; set; } = "Pending";
+
+        public DateTime? ShippedDate { get; set; }
+        public DateTime? CollectedDate { get; set; }
     }
 }

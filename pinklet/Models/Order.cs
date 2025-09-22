@@ -22,6 +22,8 @@ namespace pinklet.Models
         public string RecipientPhoneNumber { get; set; }
         public string Progress { get; set; }
         public DateTime OrderedDate { get; set; }
+        public DateTime RequiredDate { get; set; }  
+        public DateTime? DeliveredDate { get; set; }
         public string District { get; set; }
         public string PostalCode { get; set; }
         public string? DeliveryNote { get; set; }

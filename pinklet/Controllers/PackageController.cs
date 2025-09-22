@@ -42,9 +42,8 @@ namespace pinklet.Controllers
 
                 bool hasCake = dto.CakeId.HasValue;
                 bool has3DCake = dto.ThreeDCakeId.HasValue;
+                bool hasCustomCake = dto.CustomCakeId.HasValue;
 
-                if (hasCake == has3DCake)
-                    return BadRequest("You must provide either CakeId or ThreeDCakeId, but not both.");
 
                 var package = new Package
                 {
@@ -52,6 +51,7 @@ namespace pinklet.Controllers
                     UserId = dto.UserId,
                     CakeId = dto.CakeId,
                     ThreeDCakeId = dto.ThreeDCakeId,
+                    CustomCakeId = dto.CustomCakeId,
                     PackageName = dto.PackageName,
                     TotalAmount = dto.TotalAmount,
                     TotalItems = dto.TotalItems,
@@ -94,6 +94,7 @@ namespace pinklet.Controllers
                         .ThenInclude(ip => ip.Item)
                     .Include(p => p.Cake)
                     .Include(p => p.ThreeDCake)
+                    .Include(p=>p.CustomCake)
                     .AsNoTracking()
                     .ToListAsync();
 
@@ -123,6 +124,14 @@ namespace pinklet.Controllers
                         BaseShape = package.ThreeDCake.BaseShape,
                         IcingType = package.ThreeDCake.IcingType
                     } : null,
+                    CustomCake = package.CustomCakeId.HasValue ? new CustomCake
+                    {
+                        Id = package.CustomCake.Id,
+                        CakeCode = package.CustomCake.CakeCode,
+                        CakePrice = package.CustomCake.CakePrice,
+                        CakeImageLink1 = package.CustomCake.CakeImageLink1,
+
+                    }:null,
                     Items = package.ItemPackages
                         .Where(ip => ip.Item != null)
                         .Select(ip => new ItemDTO
@@ -133,7 +142,8 @@ namespace pinklet.Controllers
                             ItemPrice = ip.Item.ItemPrice,
                             ItemVariant = ip.Item.ItemVariant,
                             ItemCategory = ip.Item.ItemCategory,
-                            Quantity = ip.Quantity
+                            Quantity = ip.Quantity,
+                            SelectedVariant = ip.Variant
                         }).ToList()
                 }).ToList();
 
@@ -158,6 +168,7 @@ namespace pinklet.Controllers
 
             public int? CakeId { get; set; }
             public int? ThreeDCakeId { get; set; }
+            public int? CustomCakeId { get; set; }
             public string PackageName { get; set; }
             public double TotalAmount { get; set; }
             public int TotalItems { get; set; }
@@ -185,6 +196,7 @@ namespace pinklet.Controllers
             public List<ItemDTO> Items { get; set; }
             public Cake? Cake { get; set; }
             public _3DCakeModel? ThreeDCake { get; set; }
+            public CustomCake CustomCake { get; set; }
             public string PackageName { get; set; }
             public double TotalAmount { get; set; }
             public int TotalItems { get; set; }
@@ -201,6 +213,7 @@ namespace pinklet.Controllers
             public string? ItemVariant { get; set; }
             public string ItemCategory { get; set; }
             public int Quantity { get; set; }
+            public int? SelectedVariant { get; set; }
         }
 
     }

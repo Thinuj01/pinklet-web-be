@@ -24,6 +24,10 @@ namespace pinklet.Models
         [InverseProperty(nameof(_3DCakeModel.Packages))]
         public _3DCakeModel ThreeDCake { get; set; }
 
+        public int? CustomCakeId { get; set; }
+        [ForeignKey(nameof(CustomCakeId))]
+        public CustomCake CustomCake { get; set; }
+
         public Cart Cart { get; set; }
         public string PackageName { get; set; }
         public double TotalAmount { get; set; }

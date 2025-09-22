@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using pinklet.data;
@@ -11,9 +12,11 @@ using pinklet.data;
 namespace pinklet.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250919094457_CustomPackage")]
+    partial class CustomPackage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -340,9 +343,6 @@ namespace pinklet.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("DeliveredDate")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("DeliveryNote")
                         .HasColumnType("text");
 
@@ -376,9 +376,6 @@ namespace pinklet.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("RequiredDate")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<double>("TotalAmount")
                         .HasColumnType("double precision");
 
@@ -403,9 +400,6 @@ namespace pinklet.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("CollectedDate")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<int>("ItemPackageId")
                         .HasColumnType("integer");
 
@@ -415,9 +409,6 @@ namespace pinklet.Migrations
                     b.Property<string>("Progress")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<DateTime?>("ShippedDate")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("VendorId")
                         .HasColumnType("integer");
