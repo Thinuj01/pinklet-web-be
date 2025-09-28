@@ -99,6 +99,7 @@ namespace pinklet.Controllers
                     TotalAmount = cart.Package.TotalAmount,
                     TotalItems = cart.Package.TotalItems,
                     TotalCategories = cart.Package.TotalCategories,
+                    District = cart.Package.District,
                     ItemPackages = cart.Package.ItemPackages?.Select(ip => new ItemPackageDto
                     {
                         Quantity = ip.Quantity,

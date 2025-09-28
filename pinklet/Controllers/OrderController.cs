@@ -92,6 +92,8 @@ namespace pinklet.Controllers
 
                 await _context.SaveChangesAsync();
 
+
+
                 // ✅ Send Confirmation Email
                 var mailMessage = new MailMessage
                 {

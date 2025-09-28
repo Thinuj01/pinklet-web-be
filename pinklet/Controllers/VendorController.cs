@@ -111,6 +111,37 @@ namespace pinklet.Controllers
             return Ok(new { success = true, vendor });
         }
 
+        [HttpGet("by-vendor/{vendorId}")]
+        public async Task<IActionResult> GetVendorBId(int vendorId)
+        {
+            var vendor = await _context.Vendors
+                .Where(v => v.Id == vendorId)
+                .Select(v => new
+                {
+                    v.Id,
+                    v.UserId,
+                    v.ShopName,
+                    v.ShopDistrict,
+                    v.ShopCity,
+                    v.ShopDescription,
+                    v.FullName,
+                    v.IDNumber,
+                    v.ShopProfileImageLink,
+                    v.ShopCoverImageLink,
+                    v.IDImageLink1,
+                    v.IDImageLink2,
+                    v.IsVerified
+                })
+                .FirstOrDefaultAsync();
+
+            if (vendor == null)
+            {
+                return NotFound(new { success = false, message = "Vendor not found for the given userId." });
+            }
+
+            return Ok(new { success = true, vendor });
+        }
+
         [HttpGet("pending")]
         public async Task<IActionResult> GetPendingVendors()
         {

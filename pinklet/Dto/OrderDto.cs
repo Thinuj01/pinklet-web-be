@@ -68,6 +68,7 @@ namespace pinklet.Dto
         public double TotalAmount { get; set; }
         public int TotalItems { get; set; }
         public int TotalCategories { get; set; }
+        public string? District { get; set; }
         public CakeDto? Cake { get; set; }
         public ThreeDCakeDto? ThreeDCake { get; set; }
         public CustomCakeDto? CustomCake { get; set; }

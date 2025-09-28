@@ -227,6 +227,119 @@ namespace pinklet.Controllers
             return Ok(cakes);
         }
 
+        // GET: api/cake/random
+        [HttpGet("random")]
+        public async Task<IActionResult> GetRandomCakes()
+        {
+            try
+            {
+                // Get 10 random cakes
+                var cakes = await _context.Cakes
+                    .OrderBy(c => Guid.NewGuid()) // Randomize order
+                    .Take(10)
+                    .Select(c => new
+                    {
+                        c.Id,
+                        c.CakeCode,
+                        c.CakeName,
+                        c.CakeCategory,
+                        c.CakeDescription,
+                        c.CakePrice,
+                        c.CakeRating,
+                        c.CakeTags,
+                        c.CakeImageLink1,
+                        c.CakeImageLink2,
+                        c.CakeImageLink3,
+                        c.CakeImageLink4,
+                        c.Cake3dModelLink
+                    })
+                    .ToListAsync();
+
+                if (!cakes.Any())
+                    return NotFound(new { success = false, message = "No cakes found." });
+
+                return Ok(new { success = true, cakes });
+            }
+            catch (Exception ex)
+            {
+                var inner = ex.InnerException?.Message ?? ex.Message;
+                return StatusCode(500, new { success = false, error = "Internal Server Error", details = inner });
+            }
+        }
+
+        // GET: api/cake/top-rated
+        [HttpGet("top-rated")]
+        public async Task<IActionResult> GetTopRatedCakes()
+        {
+            try
+            {
+                var cakes = await _context.Cakes
+                    .OrderByDescending(c => c.CakeRating)   // Highest rating first
+                    .ThenBy(c => c.CakeName)                // Optional: stable ordering
+                    .Take(3)
+                    .Select(c => new
+                    {
+                        c.Id,
+                        c.CakeCode,
+                        c.CakeName,
+                        c.CakeCategory,
+                        c.CakeDescription,
+                        c.CakePrice,
+                        c.CakeRating,
+                        c.CakeTags,
+                        c.CakeImageLink1,
+                        c.CakeImageLink2,
+                        c.CakeImageLink3,
+                        c.CakeImageLink4,
+                        c.Cake3dModelLink
+                    })
+                    .ToListAsync();
+
+                if (!cakes.Any())
+                    return NotFound(new { success = false, message = "No cakes found." });
+
+                return Ok(new { success = true, cakes });
+            }
+            catch (Exception ex)
+            {
+                var inner = ex.InnerException?.Message ?? ex.Message;
+                return StatusCode(500, new { success = false, error = "Internal Server Error", details = inner });
+            }
+        }
+
+        // GET: api/cake/code/{cakeCode}
+        [HttpGet("code/{cakeCode}")]
+        public async Task<IActionResult> GetCakeByCode(string cakeCode)
+        {
+            if (string.IsNullOrWhiteSpace(cakeCode))
+                return BadRequest(new { success = false, message = "Cake code is required." });
+
+            var cake = await _context.Cakes
+                .Where(c => c.CakeCode == cakeCode)
+                .Select(c => new
+                {
+                    c.Id,
+                    c.CakeCode,
+                    c.CakeName,
+                    c.CakeCategory,
+                    c.CakeDescription,
+                    c.CakePrice,
+                    c.CakeRating,
+                    c.CakeTags,
+                    c.CakeImageLink1,
+                    c.CakeImageLink2,
+                    c.CakeImageLink3,
+                    c.CakeImageLink4,
+                    c.Cake3dModelLink
+                })
+                .FirstOrDefaultAsync();
+
+            if (cake == null)
+                return NotFound(new { success = false, message = $"No cake found with code {cakeCode}." });
+
+            return Ok(new { success = true, cake });
+        }
+
 
         public class SetPriceDto
         {

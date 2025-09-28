@@ -113,6 +113,7 @@ namespace pinklet.Controllers
         public async Task<IActionResult> GetAllItems()
         {
             var items = await _context.Items
+                .Where(i => i.IsVerified==true)
                 .Include(i => i.Vendor)
                 .ThenInclude(v => v.User)
                 .Select(i => new ItemWithVendorDTO
@@ -349,7 +350,7 @@ namespace pinklet.Controllers
             try
             {
                 var items = await _context.Items
-                    .Where(i => i.VendorId == vendorId)
+                    .Where(i => i.VendorId == vendorId && i.IsVerified==true)
                     .Select(i => new ItemWithVendorall
                     {
                         Id = i.Id,
@@ -516,6 +517,146 @@ namespace pinklet.Controllers
             return Ok(new { success = true, message = "Item rejected.", reason = dto.Reason });
         }
 
+        // GET: api/item/random
+        [HttpGet("random")]
+        public async Task<IActionResult> GetRandomItems()
+        {
+            try
+            {
+                // Get 10 random items
+                var items = await _context.Items
+                    .Include(i => i.Vendor)
+                        .ThenInclude(v => v.User)
+                    .OrderBy(r => Guid.NewGuid()) // Random order
+                    .Where(i => i.IsVerified == true)
+                    .Take(10)
+                    .Select(i => new ItemWithVendorall
+                    {
+                        Id = i.Id,
+                        ItemCode = i.ItemCode,
+                        ItemName = i.ItemName,
+                        ItemCategory = i.ItemCategory,
+                        ItemSubCategory = i.ItemSubCategory,
+                        ItemTags = i.ItemTags,
+                        ItemStock = i.ItemStock,
+                        ItemPrice = i.ItemPrice,
+                        ItemVariant = i.ItemVariant,
+                        VendorId = i.VendorId,
+                        ItemDescription = i.ItemDescription,
+
+                        ShopName = i.Vendor.ShopName,
+                        ShopCity = i.Vendor.ShopCity,
+                        ShopDistrict = i.Vendor.ShopDistrict,
+                        FullName = i.Vendor.FullName,
+                        IsVerified = i.Vendor.IsVerified ?? false,
+
+                        ImageUrl1 = i.ItemImageLink1,
+                        ImageUrl2 = i.ItemImageLink2,
+                        ImageUrl3 = i.ItemImageLink3,
+                        ImageUrl4 = i.ItemImageLink4,
+                        ImageUrl5 = i.ItemImageLink5,
+
+                        ItemRate = i.ItemRating
+                    })
+                    .ToListAsync();
+
+                if (!items.Any())
+                    return NotFound(new { success = false, message = "No items found." });
+
+                return Ok(new { success = true, items });
+            }
+            catch (Exception ex)
+            {
+                var inner = ex.InnerException?.Message ?? ex.Message;
+                return StatusCode(500, new { success = false, error = "Internal Server Error", details = inner });
+            }
+        }
+
+        // GET: api/item/top-rated
+        [HttpGet("top-rated")]
+        public async Task<IActionResult> GetTopRatedItems()
+        {
+            try
+            {
+                var items = await _context.Items
+                    .Include(i => i.Vendor)
+                        .ThenInclude(v => v.User)
+                    .Where(i => i.ItemRating >= 0 && i.IsVerified==true) // Only items that have ratings
+                    .OrderByDescending(i => i.ItemRating) // Highest rated first
+                    .ThenBy(i => i.ItemName) // Tie-breaker
+                    .Take(3)
+                    .Select(i => new ItemWithVendorall
+                    {
+                        Id = i.Id,
+                        ItemCode = i.ItemCode,
+                        ItemName = i.ItemName,
+                        ItemCategory = i.ItemCategory,
+                        ItemSubCategory = i.ItemSubCategory,
+                        ItemTags = i.ItemTags,
+                        ItemStock = i.ItemStock,
+                        ItemPrice = i.ItemPrice,
+                        ItemVariant = i.ItemVariant,
+                        VendorId = i.VendorId,
+                        ItemDescription = i.ItemDescription,
+
+                        ShopName = i.Vendor.ShopName,
+                        ShopCity = i.Vendor.ShopCity,
+                        ShopDistrict = i.Vendor.ShopDistrict,
+                        FullName = i.Vendor.FullName,
+                        IsVerified = i.Vendor.IsVerified ?? false,
+
+                        ImageUrl1 = i.ItemImageLink1,
+                        ImageUrl2 = i.ItemImageLink2,
+                        ImageUrl3 = i.ItemImageLink3,
+                        ImageUrl4 = i.ItemImageLink4,
+                        ImageUrl5 = i.ItemImageLink5,
+
+                        ItemRate = i.ItemRating
+                    })
+                    .ToListAsync();
+
+                if (!items.Any())
+                    return NotFound(new { success = false, message = "No rated items found." });
+
+                return Ok(new { success = true, items });
+            }
+            catch (Exception ex)
+            {
+                var inner = ex.InnerException?.Message ?? ex.Message;
+                return StatusCode(500, new { success = false, error = "Internal Server Error", details = inner });
+            }
+        }
+
+        [HttpPost("StockReduce")]
+        public async Task<IActionResult> ItemStockReduce([FromBody] StockReduce dto)
+        {
+            try
+            {
+                var item = await _context.Items.FindAsync(dto.ItemId);
+
+                    item.ItemStock = dto.ItemStock;
+                    item.ItemVariant = dto.ItemVariant;
+
+                _context.Items.Update(item);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { success = true, message = "Item updated successfully", item.Id });
+
+
+            }
+            catch(Exception ex)
+            {
+                var inner = ex.InnerException?.Message ?? ex.Message;
+                return StatusCode(500, new { success = false, error = "Internal Server Error", details = inner });
+            }
+        }
+
+        public class StockReduce()
+        {
+            public int ItemId { get; set; }
+            public string? ItemVariant { get; set; }
+            public int ItemStock { get; set; }
+        }
 
         public class RejectReasonDto
         {
