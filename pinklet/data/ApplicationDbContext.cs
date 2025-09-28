@@ -128,11 +128,11 @@ namespace pinklet.data
                 .HasForeignKey(c => c.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // ✅ Package → Cart (One-to-One)
+            // Package → Cart (One-to-Many)
             modelBuilder.Entity<Cart>()
                 .HasOne(c => c.Package)
-                .WithOne(p => p.Cart)
-                .HasForeignKey<Cart>(c => c.PackageId)
+                .WithMany(p => p.Carts) // Changed to collection navigation property
+                .HasForeignKey(c => c.PackageId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // ✅ Item → Vendor (Many-to-One)

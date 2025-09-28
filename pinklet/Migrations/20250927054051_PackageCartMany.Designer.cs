@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using pinklet.data;
@@ -11,9 +12,11 @@ using pinklet.data;
 namespace pinklet.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250927054051_PackageCartMany")]
+    partial class PackageCartMany
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -272,9 +275,6 @@ namespace pinklet.Migrations
 
                     b.Property<string>("ItemVariant")
                         .HasColumnType("text");
-
-                    b.Property<int?>("RatingNo")
-                        .HasColumnType("integer");
 
                     b.Property<int>("VendorId")
                         .HasColumnType("integer");

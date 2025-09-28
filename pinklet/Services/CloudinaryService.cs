@@ -34,4 +34,15 @@ public class CloudinaryService
 
         return null;
     }
+    public async Task<string> UploadFileAsync(IFormFile file, string fileType)
+    {
+        using var stream = file.OpenReadStream();
+        var uploadParams = new RawUploadParams
+        {
+            File = new FileDescription(file.FileName, stream),
+            Folder = "cakes/3d_models"
+        };
+        var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+        return uploadResult.SecureUrl.ToString();
+    }
 }

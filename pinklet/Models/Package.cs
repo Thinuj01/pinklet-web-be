@@ -28,11 +28,12 @@ namespace pinklet.Models
         [ForeignKey(nameof(CustomCakeId))]
         public CustomCake CustomCake { get; set; }
 
-        public Cart Cart { get; set; }
+        public ICollection<Cart> Carts { get; set; }
         public string PackageName { get; set; }
         public double TotalAmount { get; set; }
         public int TotalItems { get; set; }
         public int TotalCategories { get; set; }
+        public string District { get; set; }
 
     }
 }

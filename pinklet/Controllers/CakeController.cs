@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using pinklet.data;
+using pinklet.Dto;
 using pinklet.Models;
 using System.Net;
 using System.Net.Mail;
@@ -28,18 +29,56 @@ namespace pinklet.Controllers
 
         // POST: api/cake
         [HttpPost]
-        public async Task<IActionResult> AddCake([FromBody] Cake cake)
+        [Consumes("multipart/form-data")]
+        [Authorize]
+        public async Task<IActionResult> AddCake([FromForm] CakeAddDto dto)
         {
+            if (dto == null)
+            {
+                return BadRequest("Cake data is required.");
+            }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            if (cake == null)
+
+            var uploadedImageUrls = new List<string>();
+            foreach (var file in dto.CakeImages.Where(f => f != null))
             {
-                return BadRequest("Cake data is required.");
+                var url = await _cloudinaryService.UploadImageAsync(file);
+                uploadedImageUrls.Add(url);
             }
+
+            string? modelUrl = null;
+            if (dto.Cake3dModel != null)
+            {
+                if (!dto.Cake3dModel.FileName.EndsWith(".glb", StringComparison.OrdinalIgnoreCase))
+                {
+                    return BadRequest("3D model must be a .glb file.");
+                }
+                modelUrl = await _cloudinaryService.UploadFileAsync(dto.Cake3dModel, "glb");
+            }
+
+            var cake = new Cake
+            {
+                CakeCode = GenerateCakeCode(),
+                CakeName = dto.CakeName,
+                CakeCategory = dto.CakeSubCategory,
+                CakeDescription = dto.CakeDescription,
+                CakePrice = dto.CakePrice,
+                CakeRating = 0,
+                CakeTags = dto.CakeTags,
+                CakeImageLink1 = uploadedImageUrls.ElementAtOrDefault(0),
+                CakeImageLink2 = uploadedImageUrls.ElementAtOrDefault(1),
+                CakeImageLink3 = uploadedImageUrls.ElementAtOrDefault(2),
+                CakeImageLink4 = uploadedImageUrls.ElementAtOrDefault(3),
+                Cake3dModelLink = modelUrl,
+            };
+
             _context.Cakes.Add(cake);
             await _context.SaveChangesAsync();
+
             return Ok(new { message = "Cake added successfully", cake.Id });
         }
 

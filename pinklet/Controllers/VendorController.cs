@@ -147,6 +147,7 @@ namespace pinklet.Controllers
             if (vendor == null) return NotFound(new { success = false, message = "Vendor not found" });
 
             vendor.IsVerified = true;
+            vendor.User.Role = "Vendor";
             await _context.SaveChangesAsync();
 
             // send approval email

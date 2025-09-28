@@ -61,7 +61,8 @@ namespace pinklet.Controllers
                         ItemId = i.ItemId,
                         Quantity = i.Quantity,
                         Variant = i.Variant
-                    }).ToList()
+                    }).ToList(),
+                    District=dto.District
                 };
 
                 _context.Packages.Add(package);
@@ -109,6 +110,7 @@ namespace pinklet.Controllers
                     TotalAmount = package.TotalAmount,
                     TotalItems = package.TotalItems,
                     TotalCategories = package.TotalCategories,
+                    District=package.District,
                     Cake = package.CakeId.HasValue ? new Cake
                     {
                         Id = package.Cake.Id,
@@ -122,7 +124,8 @@ namespace pinklet.Controllers
                         Id = package.ThreeDCake.Id,
                         CakeCode = package.ThreeDCake.CakeCode,
                         BaseShape = package.ThreeDCake.BaseShape,
-                        IcingType = package.ThreeDCake.IcingType
+                        IcingType = package.ThreeDCake.IcingType,
+                        RequestedPrice = package.ThreeDCake.RequestedPrice
                     } : null,
                     CustomCake = package.CustomCakeId.HasValue ? new CustomCake
                     {
@@ -156,7 +159,62 @@ namespace pinklet.Controllers
             }
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdatePackage(int id, [FromBody] PackageUpdateDTO dto)
+        {
+            if (!ModelState.IsValid || dto == null)
+                return BadRequest(ModelState);
 
+            var package = await _context.Packages
+                .Include(p => p.ItemPackages)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (package == null)
+                return NotFound("Package not found.");
+
+            try
+            {
+                // Update basic package info
+                package.TotalAmount = dto.TotalAmount;
+                package.TotalItems = dto.TotalItems;
+                package.TotalCategories = dto.TotalCategories;
+                package.CakeId = dto.CakeId;
+                package.ThreeDCakeId = dto.ThreeDCakeId;
+                package.CustomCakeId = dto.CustomCakeId;
+
+                // Update item packages
+                _context.ItemPackages.RemoveRange(package.ItemPackages);
+
+                package.ItemPackages = dto.Items.Select(i => new ItemPackage
+                {
+                    ItemId = i.ItemId,
+                    Quantity = i.Quantity,
+                    Variant = i.Variant
+                }).ToList();
+
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "Package updated", package.Id });
+            }
+            catch (DbUpdateException ex)
+            {
+                var inner = ex.InnerException?.Message ?? "No inner exception";
+                _logger.LogError(ex, "Database update error: {Error}", inner);
+                return StatusCode(500, $"Internal server error: {inner}");
+            }
+        }
+        public class PackageUpdateDTO
+        {
+
+            public int? CakeId { get; set; }
+            public int? ThreeDCakeId { get; set; }
+            public int? CustomCakeId { get; set; }
+            public double TotalAmount { get; set; }
+            public int TotalItems { get; set; }
+            public int TotalCategories { get; set; }
+            [Required]
+            [MinLength(1, ErrorMessage = "At least one item is required.")]
+            public List<ItemWithQuantityDTO> Items { get; set; }
+        }
 
         public class PackageDTO
         {
@@ -176,6 +234,7 @@ namespace pinklet.Controllers
             [Required]
             [MinLength(1, ErrorMessage = "At least one item is required.")]
             public List<ItemWithQuantityDTO> Items { get; set; }
+            public string? District { get; set; }
         }
 
         public class ItemWithQuantityDTO
@@ -201,6 +260,7 @@ namespace pinklet.Controllers
             public double TotalAmount { get; set; }
             public int TotalItems { get; set; }
             public int TotalCategories { get; set; }
+            public string District { get; set; }
 
         }
 

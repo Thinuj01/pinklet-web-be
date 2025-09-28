@@ -20,6 +20,7 @@ namespace pinklet.Models
         public double? ItemPrice { get; set; }
         public string? ItemVariant { get; set; }
         public int ItemRating { get; set; }
+        public int? RatingNo { get; set; } = 0;
         public string ItemDescription { get; set; }
         public string? ItemImageLink1 { get; set; }
         public string? ItemImageLink2 { get; set; }

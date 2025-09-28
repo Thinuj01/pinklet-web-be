@@ -90,6 +90,18 @@ namespace pinklet.Dto
         public string? CakeImageLink3 { get; set; }
         public string? CakeImageLink4 { get; set; }
     }
+    public class CakeAddDto
+    {
+        public string CakeName { get; set; }
+        public string CakeCategory { get; set; }
+        public string CakeSubCategory { get; set; }
+        public string CakeDescription { get; set; }
+        public double CakePrice { get; set; }
+        public string CakeTags { get; set; }
+        public int VendorId { get; set; }
+        public List<IFormFile> CakeImages { get; set; } = new List<IFormFile>();
+        public IFormFile? Cake3dModel { get; set; }
+    }
     public class ThreeDCakeDto
     {
         public int Id { get; set; }
