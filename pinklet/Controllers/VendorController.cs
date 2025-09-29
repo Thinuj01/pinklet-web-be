@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using pinklet.data;
@@ -75,6 +76,43 @@ namespace pinklet.Controllers
                 return BadRequest(new
                 {
                     error = "An error occurred while saving the vendor.",
+                    details = ex.InnerException?.Message ?? ex.Message
+                });
+            }
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllVendors()
+        {
+            try
+            {
+                var vendors = await _context.Vendors
+                    .Select(v => new
+                    {
+                        v.Id,
+                        v.UserId,
+                        v.ShopName,
+                        v.ShopDistrict,
+                        v.ShopCity,
+                        v.ShopDescription,
+                        v.FullName,
+                        v.IDNumber,
+                        v.ShopProfileImageLink,
+                        v.ShopCoverImageLink,
+                        v.IDImageLink1,
+                        v.IDImageLink2,
+                        v.IsVerified
+                    })
+                    .ToListAsync();
+
+                return Ok(new { success = true, vendors });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    error = "Failed to fetch vendors",
                     details = ex.InnerException?.Message ?? ex.Message
                 });
             }

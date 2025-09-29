@@ -68,58 +68,69 @@ namespace pinklet.Controllers
         [HttpPost("google-login")]
         public async Task<IActionResult> GoogleLoginAsync([FromBody] GoogleLoginRequest request)
         {
-            // TODO: Check if user exists in DB and create user if not (you can use EF Core here)
-
-            // For demonstration, we directly return JWT
-
-            if (await _context.Users.AnyAsync(u => u.Email == request.Email))
+            try
             {
+                if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Name))
+                    return BadRequest("Email or name is missing.");
 
-            }
-            else
-            {
-                var user = new User
+                // Check if user exists
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+                if (user == null)
                 {
-                    FirstName = request.Name,
-                    LastName = "",
-                    Email = request.Email,
-                    Password = "",
-                    PhoneNumber = "",
-                    Role = "User",
-                    Availability = "verified",
-                    EmailVerificationToken = "",
-                    TokenGeneratedAt = DateTime.UtcNow
-                };
+                    // Create new user
+                    user = new User
+                    {
+                        FirstName = request.Name,
+                        LastName = "", // Google may not provide last name
+                        Email = request.Email,
+                        Password = "", // No password for Google login
+                        PhoneNumber = "",
+                        Role = "User",
+                        Availability = "verified", // Google login implies verified email
+                        EmailVerificationToken = null,
+                        TokenGeneratedAt = null,
+                        ProfileImageLink = request.Picture // Use Google profile picture
+                    };
 
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
+                    _context.Users.Add(user);
+                    await _context.SaveChangesAsync();
+                }
+
+                // Check if user is a vendor
+                int? vendorId = null;
+                if (user.Role == "Vendor")
+                {
+                    var vendor = await _context.Vendors.FirstOrDefaultAsync(v => v.UserId == user.Id);
+                    if (vendor != null)
+                    {
+                        vendorId = vendor.Id;
+                    }
+                }
+
+                // Generate JWT token
+                var token = GenerateJwtToken(user);
+
+                // Return response matching the Login method
+                return Ok(new
+                {
+                    token,
+                    email = user.Email,
+                    name = user.FirstName,
+                    lname = user.LastName,
+                    id = user.Id,
+                    proPic = user.ProfileImageLink,
+                    role = user.Role,
+                    vendorId // Will be null if not a vendor
+                });
             }
-
-
-            var claims = new[]
+            catch (Exception ex)
             {
-                new Claim(JwtRegisteredClaimNames.Sub, request.Sub),
-                new Claim(JwtRegisteredClaimNames.Email, request.Email),
-                new Claim("name", request.Name)
-            };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: configuration["Jwt:Issuer"],
-                audience: configuration["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddDays(7),
-                signingCredentials: creds
-            );
-
-            return Ok(new
-            {
-                token = new JwtSecurityTokenHandler().WriteToken(token),
-                email = request.Email,
-                name = request.Name
-            });
+                return BadRequest(new
+                {
+                    error = "An error occurred during Google login.",
+                    details = ex.InnerException?.Message ?? ex.Message
+                });
+            }
         }
 
 
@@ -313,7 +324,37 @@ namespace pinklet.Controllers
             }
         }
 
+        [HttpGet("users")]
+        [Authorize]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            try
+            {
+                var users = await _context.Users
+                    .Select(u => new
+                    {
+                        u.Id,
+                        u.FirstName,
+                        u.LastName,
+                        u.Email,
+                        u.PhoneNumber,
+                        u.Role,
+                        u.Availability,
+                        u.ProfileImageLink
+                    })
+                    .ToListAsync();
 
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    error = "Failed to fetch users",
+                    details = ex.InnerException?.Message ?? ex.Message
+                });
+            }
+        }
         private string HashPassword(string password)
         {
             using var sha = SHA256.Create();
@@ -410,6 +451,7 @@ namespace pinklet.Controllers
 
 
     }
+
 
     // DTO for get loging credientails as object
     public class UserDto

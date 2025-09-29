@@ -340,7 +340,50 @@ namespace pinklet.Controllers
             return Ok(new { success = true, cake });
         }
 
+        [HttpGet("custom")]
+        [Authorize]
+        public async Task<IActionResult> GetAllCustomCakes()
+        {
+            try
+            {
+                var customCakes = await _context.CustomCakes
+                    .Include(c => c.User)
+                    .Select(c => new
+                    {
+                        c.Id,
+                        c.UserId,
+                        c.CakeCode,
+                        c.Description,
+                        c.CakeWeight,
+                        c.CakePrice,
+                        c.CakeImageLink1,
+                        c.CakeImageLink2,
+                        c.CakeImageLink3,
+                        c.CakeImageLink4,
+                        c.CakeImageLink5,
+                        UserEmail = c.User.Email,
+                        UserFirstName = c.User.FirstName,
+                        UserLastName = c.User.LastName
+                    })
+                    .ToListAsync();
 
+                if (!customCakes.Any())
+                {
+                    return NotFound(new { success = false, message = "No custom cakes found." });
+                }
+
+                return Ok(new { success = true, customCakes });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    error = "Failed to fetch custom cakes",
+                    details = ex.InnerException?.Message ?? ex.Message
+                });
+            }
+        }
         public class SetPriceDto
         {
             public double CakePrice { get; set; }

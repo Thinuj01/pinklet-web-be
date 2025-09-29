@@ -143,7 +143,55 @@ namespace pinklet.Controllers
                     ImageUrl4 = i.ItemImageLink4,
                     ImageUrl5 = i.ItemImageLink5,
 
-                    ItemRate = i.ItemRating
+                    ItemRate = i.ItemRating,
+                    RatingNo = i.RatingNo
+                })
+                .ToListAsync();
+
+            if (items == null || !items.Any())
+            {
+                return NotFound("No items found.");
+            }
+
+            return Ok(items);
+        }
+        [HttpGet("admin")]
+        public async Task<IActionResult> GetAllItemsAdmin()
+        {
+            var items = await _context.Items
+                .Where(i => i.IsVerified == true)
+                .Include(i => i.Vendor)
+                .ThenInclude(v => v.User)
+                .Select(i => new ItemWithVendorAdminDTO
+                {
+                    Id = i.Id,
+                    ItemCode = i.ItemCode,
+                    ItemName = i.ItemName,
+                    ItemCategory = i.ItemCategory,
+                    ItemSubCategory = i.ItemSubCategory,
+                    ItemTags = i.ItemTags,
+                    ItemStock = i.ItemStock,
+                    ItemPrice = i.ItemPrice,
+                    ItemVariant = i.ItemVariant,
+                    VendorId = i.VendorId,
+                    ItemDescription = i.ItemDescription,
+
+
+                    ShopName = i.Vendor.ShopName,
+                    ShopCity = i.Vendor.ShopCity,
+                    ShopDistrict = i.Vendor.ShopDistrict,
+                    IsVerified = i.Vendor.IsVerified ?? false,
+                    VendorName = i.Vendor.FullName,
+
+
+                    ImageUrl1 = i.ItemImageLink1,
+                    ImageUrl2 = i.ItemImageLink2,
+                    ImageUrl3 = i.ItemImageLink3,
+                    ImageUrl4 = i.ItemImageLink4,
+                    ImageUrl5 = i.ItemImageLink5,
+
+                    ItemRate = i.ItemRating,
+                    RatingNo = i.RatingNo
                 })
                 .ToListAsync();
 
@@ -189,7 +237,8 @@ namespace pinklet.Controllers
                         ImageUrl4 = i.ItemImageLink4,
                         ImageUrl5 = i.ItemImageLink5,
 
-                        ItemRate = i.ItemRating
+                        ItemRate = i.ItemRating,
+                        RatingNo = i.RatingNo
                     })
                     .FirstOrDefaultAsync();
 
@@ -310,6 +359,39 @@ namespace pinklet.Controllers
             public string? ImageUrl5 { get; set; }
 
             public int ItemRate { get; set; }
+            public int? RatingNo { get; set; }
+        }
+        public class ItemWithVendorAdminDTO
+        {
+            public int Id { get; set; }
+            public string ItemCode { get; set; }
+            public string ItemName { get; set; }
+            public string ItemCategory { get; set; }
+            public string ItemSubCategory { get; set; }
+            public string ItemTags { get; set; }
+            public int? ItemStock { get; set; }
+            public double? ItemPrice { get; set; }
+            public string? ItemVariant { get; set; }
+            public string ItemDescription { get; set; }
+
+            public int VendorId { get; set; }
+
+            // Vendor info (from Vendor table)
+            public string ShopName { get; set; }
+            public string ShopCity { get; set; }
+            public string ShopDistrict { get; set; }
+            public bool IsVerified { get; set; }
+            public string VendorName { get; set; }
+
+            // Images
+            public string? ImageUrl1 { get; set; }
+            public string? ImageUrl2 { get; set; }
+            public string? ImageUrl3 { get; set; }
+            public string? ImageUrl4 { get; set; }
+            public string? ImageUrl5 { get; set; }
+
+            public int ItemRate { get; set; }
+            public int? RatingNo { get; set; }
         }
         public class ItemWithVendorall
         {
@@ -341,6 +423,7 @@ namespace pinklet.Controllers
             public string? ImageUrl5 { get; set; }
 
             public int ItemRate { get; set; }
+            public int? RatingNo { get; set; }
         }
 
         // GET: api/item/vendor/{vendorId}
@@ -377,7 +460,8 @@ namespace pinklet.Controllers
                         ImageUrl4 = i.ItemImageLink4,
                         ImageUrl5 = i.ItemImageLink5,
 
-                        ItemRate = i.ItemRating
+                        ItemRate = i.ItemRating,
+                        RatingNo = i.RatingNo
                     })
                     .ToListAsync();
 
@@ -428,7 +512,8 @@ namespace pinklet.Controllers
                     ImageUrl4 = i.ItemImageLink4,
                     ImageUrl5 = i.ItemImageLink5,
 
-                    ItemRate = i.ItemRating
+                    ItemRate = i.ItemRating,
+                    RatingNo = i.RatingNo
                 })
                 .ToListAsync();
 
@@ -556,7 +641,8 @@ namespace pinklet.Controllers
                         ImageUrl4 = i.ItemImageLink4,
                         ImageUrl5 = i.ItemImageLink5,
 
-                        ItemRate = i.ItemRating
+                        ItemRate = i.ItemRating,
+                        RatingNo=i.RatingNo
                     })
                     .ToListAsync();
 
@@ -611,7 +697,9 @@ namespace pinklet.Controllers
                         ImageUrl4 = i.ItemImageLink4,
                         ImageUrl5 = i.ItemImageLink5,
 
-                        ItemRate = i.ItemRating
+                        ItemRate = i.ItemRating,
+                        RatingNo = i.RatingNo
+
                     })
                     .ToListAsync();
 

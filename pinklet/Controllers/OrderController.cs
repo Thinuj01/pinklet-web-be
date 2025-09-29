@@ -175,7 +175,8 @@ namespace pinklet.Controllers
                         oi.ShippedDate,
                         oi.CollectedDate,
                         Vendor = new { oi.Vendor.Id, oi.Vendor.ShopName },
-                        Item = new { 
+                        Item = new {
+                            oi.ItemPackage.Item.Id,
                             oi.ItemPackage.Item.ItemName, 
                             oi.ItemPackage.Quantity,
                             oi.ItemPackage.Item.ItemCategory, 
